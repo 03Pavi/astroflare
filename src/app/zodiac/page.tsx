@@ -5,7 +5,7 @@ import { Container } from '@mui/material';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 
-import styles from '@/components/home/zodiac.module.scss';
+import styles from '@/components/home/zodiac/zodiac.module.scss';
 import pageStyles from './page.module.scss';
 import { signs } from '@/constants/zodiac';
 
