@@ -9,4 +9,5 @@ coverage
 .env.*
 !.env.example
 
-  
+  public/sw.js
+public/workbox-*.js
