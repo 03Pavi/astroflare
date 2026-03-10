@@ -63,3 +63,10 @@ export function onAuthChange(callback: (user: User | null) => void) {
 export async function logout() {
   await signOut(auth);
 }
+
+/** Handle OAuth Callback (e.g. from redirect) */
+export async function handleOAuthCallback() {
+  // If we are using popup this is not strictly necessary but keeping for compatibility
+  // with redirect flows if implemented
+  return Promise.resolve();
+}
