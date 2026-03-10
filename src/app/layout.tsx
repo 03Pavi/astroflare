@@ -10,6 +10,7 @@ import "./globals.scss";
 export const metadata: Metadata = {
   title: "AstroFlare — Your Cosmic Guide",
   description: "Premium astrological AI platform — birth charts, daily horoscopes & cosmic insights.",
+  manifest: "/manifest.json",
   icons: {
     icon: "/app-logo.png",
   },
