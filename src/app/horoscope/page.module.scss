@@ -1,0 +1,490 @@
+.page {
+  position: relative;
+  min-height: 100vh;
+  padding: 8rem 1.5rem 4rem;
+  background: #020617;
+  color: #fff;
+  overflow: hidden;
+}
+
+.gridOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 30px 30px;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.container {
+  position: relative;
+  z-index: 10;
+  max-width: 1000px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 4.5rem;
+
+  h1 {
+    font-size: 4rem;
+    font-weight: 800;
+    margin-bottom: 0.75rem;
+    background: linear-gradient(to right, #fff, #94a3b8);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  p {
+    color: #94a3b8;
+    font-size: 1.25rem;
+  }
+}
+
+.aiBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 1.4rem;
+  background: rgba(234, 179, 8, 0.1);
+  border: 1px solid rgba(234, 179, 8, 0.2);
+  border-radius: 99px;
+  color: #fbbf24;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-bottom: 1.5rem;
+
+  svg {
+    font-size: 1.1rem;
+  }
+}
+
+.noSign {
+  text-align: center;
+  padding: 6rem;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 32px;
+  max-width: 700px;
+  margin: 0 auto;
+
+  h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    color: #94a3b8;
+    margin-bottom: 2.5rem;
+    font-size: 1.1rem;
+    line-height: 1.6;
+  }
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 4rem;
+}
+
+.primaryBtn {
+  background: #7c3aed;
+  color: #fff;
+  padding: 1rem 2.5rem;
+  border-radius: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #8b5cf6;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px -5px rgba(124, 58, 237, 0.4);
+  }
+}
+
+.signPicker {
+  h3 {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+    color: #cbd5e1;
+  }
+}
+
+.signGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+}
+
+.signSmallBtn {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 1.25rem;
+  border-radius: 16px;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.12);
+    transform: translateY(-2px);
+  }
+
+  span {
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+}
+
+.horoscopeContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.signSelector {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 1rem;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  @media (max-width: 640px) {
+    mask-image: linear-gradient(to right, black 90%, transparent);
+  }
+}
+
+.signTab {
+  padding: 0.75rem 1.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 100px;
+  color: #94a3b8;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+
+  &:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  &.active {
+    background: #fff;
+    color: #020617;
+    border-color: #fff;
+  }
+}
+
+.horoscopeCard {
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 40px;
+  padding: 5rem;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 8px;
+    height: 100%;
+    background: linear-gradient(to bottom, #7c3aed, #ec4899);
+  }
+
+  @media (max-width: 640px) {
+    padding: 3rem 2rem;
+  }
+}
+
+.signIconWrapper {
+  position: relative;
+  width: 90px;
+  height: 90px;
+}
+
+.mainSignIcon {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #4c1d95, #7c3aed);
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.25), rgba(79, 70, 229, 0.25));
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  font-size: 3.5rem;
+  font-weight: 400;
+  line-height: 1;
+
+  svg {
+    font-size: 3rem;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+  }
+
+  @media (max-width: 640px) {
+    font-size: 2.75rem;
+
+    svg {
+      font-size: 2.5rem;
+    }
+  }
+}
+
+.sparkleIcon {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 32px;
+  height: 32px;
+  background: #1e1b4b;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fbbf24;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  z-index: 2;
+
+  svg {
+    font-size: 1.1rem;
+    filter: drop-shadow(0 0 5px rgba(251, 191, 36, 0.5));
+  }
+}
+
+.kanyaBadge {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.25rem 0.75rem;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 600;
+  height: fit-content;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.dateRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+/* ─── Reading Area ───────────────────── */
+.reading {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.lagnaBox {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+  padding: 1.25rem 1.75rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.lagnaIcon {
+  width: 48px;
+  height: 48px;
+  background: rgba(124, 58, 237, 0.1);
+  color: #a78bfa;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lagnaInfo {
+  label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.25rem;
+  }
+
+  p {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #e2e8f0;
+  }
+}
+
+.markdownContent,
+.markdownDesc {
+  color: #cbd5e1;
+  font-size: 1.15rem;
+  line-height: 1.8;
+
+  p {
+    margin-bottom: 1.25rem;
+  }
+
+  strong {
+    color: #fff;
+    font-weight: 700;
+  }
+
+  ul {
+    margin-bottom: 1.5rem;
+    padding-left: 1.5rem;
+  }
+
+  li {
+    margin-bottom: 0.5rem;
+  }
+
+  h1,
+  h2,
+  h3 {
+    margin: 2.5rem 0 1rem;
+    color: #fff;
+    font-weight: 700;
+  }
+}
+
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: 3.5rem;
+}
+
+.section {
+  display: flex;
+  gap: 2rem;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+.sectionIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  svg {
+    font-size: 1.75rem;
+  }
+}
+
+.sectionContent {
+  flex: 1;
+
+  h3 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: #fff;
+  }
+
+  .quote {
+    font-size: 1.25rem;
+    font-style: italic;
+    color: #94a3b8;
+    margin-bottom: 1.25rem;
+    padding-left: 1rem;
+    border-left: 3px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .desc {
+    font-size: 1.15rem;
+    line-height: 1.7;
+    color: #cbd5e1;
+  }
+}
+
+.skeletonContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.learnMore {
+  margin-top: 4rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 1.5rem 2rem;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #94a3b8;
+  text-decoration: none;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+
+    .learnMoreContent span {
+      padding-left: 4px;
+    }
+  }
+
+  .learnMoreContent {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    svg {
+      color: #a78bfa;
+    }
+
+    span {
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .header h1 {
+    font-size: 2.75rem;
+  }
+}

@@ -1,11 +1,15 @@
 
 import type { Metadata } from "next";
 import StoreProvider from "@/shared/providers/store-provider";
+import ThemeProvider from "@/shared/providers/theme-provider";
+import SparkleCursor from "@/components/shared/sparkle-cursor";
+import Header from "@/components/shared/header";
+import { AuthProvider } from "@/context/auth-context";
 import "./globals.scss";
 
 export const metadata: Metadata = {
-  title: "Next project",
-  description: "A Sample Next.js project with scalable modular structure",
+  title: "AstroFlare — Your Cosmic Guide",
+  description: "Premium astrological AI platform — birth charts, daily horoscopes & cosmic insights.",
   icons: {
     icon: "/app-logo.png",
   },
@@ -19,7 +23,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body suppressHydrationWarning={true}>
-        <StoreProvider>{children}</StoreProvider>
+        <AuthProvider>
+          <ThemeProvider>
+            <StoreProvider>
+              <Header />
+              {children}
+            </StoreProvider>
+            <SparkleCursor />
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );

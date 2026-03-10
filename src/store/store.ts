@@ -3,6 +3,7 @@ import { persistReducer } from "redux-persist";
 import createWebStorage from "redux-persist/es/storage/createWebStorage";
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import userReducer from "./slices/user-slice";
+import chartsReducer from "./slices/charts-slice";
 
 const createNoopStorage = () => {
   return {
@@ -30,6 +31,7 @@ const persistConfig = {
 
 const rootReducer = combineReducers({
   user: userReducer,
+  charts: chartsReducer,
 });
 
 const persistedReducer: any = persistReducer(persistConfig, rootReducer);

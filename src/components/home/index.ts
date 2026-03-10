@@ -1,0 +1,7 @@
+export * from "./hero"
+export * from "./features"
+export * from "./zodiac"
+export * from "./analysis"
+export * from "./footer"
+export * from "./light-rays"
+export * from "./tilted-card"
