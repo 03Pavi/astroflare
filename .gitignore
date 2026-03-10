@@ -1,0 +1,12 @@
+
+node_modules
+.next
+.vscode/
+.idea/
+coverage
+/etc/secrets
+.env
+.env.*
+!.env.example
+
+  
