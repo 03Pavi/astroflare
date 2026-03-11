@@ -5,7 +5,9 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { Stars, Float } from '@react-three/drei';
 import * as THREE from 'three';
 
-const Planet = ({ radius, speed, size, color, offset = 0 }: { radius: number; speed: number; size: number; color: string; offset?: number }) => {
+const Planet = ({ radius, speed, size, color, offset = 0 }: {
+  radius: number; speed: number; size: number; color: string; offset?: number
+}) => {
   const ref = useRef<THREE.Group>(null!);
 
   useFrame(({ clock }) => {
@@ -22,12 +24,12 @@ const Planet = ({ radius, speed, size, color, offset = 0 }: { radius: number; sp
           <meshStandardMaterial
             color={color}
             emissive={color}
-            emissiveIntensity={0.5}
-            metalness={0.8}
-            roughness={0.2}
+            emissiveIntensity={0.6}
+            metalness={0.9}
+            roughness={0.1}
           />
         </mesh>
-        <pointLight color={color} intensity={2} distance={size * 5} />
+        <pointLight color={color} intensity={3} distance={size * 8} />
       </Float>
     </group>
   );
@@ -36,39 +38,38 @@ const Planet = ({ radius, speed, size, color, offset = 0 }: { radius: number; sp
 const PlanetarySystem = () => {
   return (
     <group rotation={[Math.PI / 6, 0, 0]}>
-      {/* Sun/Core Light */}
-      <pointLight intensity={5} distance={20} color="#F59E0B" />
+      {/* Central glow */}
+      <pointLight intensity={8} distance={20} color="#F59E0B" />
+      <mesh>
+        <sphereGeometry args={[0.4, 32, 32]} />
+        <meshStandardMaterial color="#F59E0B" emissive="#F59E0B" emissiveIntensity={2} />
+      </mesh>
 
-      <Planet radius={4} speed={0.4} size={0.3} color="#06B6D4" offset={0} />
-      <Planet radius={7} speed={0.2} size={0.5} color="#a490c2" offset={Math.PI / 2} />
-      <Planet radius={10} speed={0.15} size={0.4} color="#6366f1" offset={Math.PI} />
+      <Planet radius={4} speed={0.4} size={0.25} color="#06B6D4" offset={0} />
+      <Planet radius={6.5} speed={0.25} size={0.4} color="#a490c2" offset={Math.PI / 2} />
+      <Planet radius={9.5} speed={0.15} size={0.35} color="#6366f1" offset={Math.PI} />
+      <Planet radius={13} speed={0.08} size={0.5} color="#ec4899" offset={Math.PI * 0.7} />
 
       {/* Orbit Rings */}
-      <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[3.95, 4.05, 64]} />
-        <meshBasicMaterial color="white" transparent opacity={0.05} side={THREE.DoubleSide} />
-      </mesh>
-      <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[6.95, 7.05, 64]} />
-        <meshBasicMaterial color="white" transparent opacity={0.05} side={THREE.DoubleSide} />
-      </mesh>
-      <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[9.95, 10.05, 64]} />
-        <meshBasicMaterial color="white" transparent opacity={0.05} side={THREE.DoubleSide} />
-      </mesh>
+      {[4, 6.5, 9.5, 13].map((r, i) => (
+        <mesh key={i} rotation={[Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[r - 0.05, r + 0.05, 128]} />
+          <meshBasicMaterial color="white" transparent opacity={0.04} side={THREE.DoubleSide} />
+        </mesh>
+      ))}
     </group>
   );
 };
 
-const EnhancedGalaxy = () => {
+const MainGalaxy = () => {
   const pointsRef = useRef<THREE.Points>(null!);
 
-  const count = 30000;
-  const radius = 15;
-  const branches = 6;
-  const spin = 0.8;
-  const insideColor = '#F59E0B'; // Gold Core
-  const outsideColor = '#4338ca'; // Deep Indigo Arms
+  const count = 50000;
+  const radius = 20;
+  const branches = 5;
+  const spin = 1.2;
+  const insideColor = '#F59E0B';
+  const outsideColor = '#4338ca';
 
   const [positions, colors] = useMemo(() => {
     const positions = new Float32Array(count * 3);
@@ -78,45 +79,89 @@ const EnhancedGalaxy = () => {
 
     for (let i = 0; i < count; i++) {
       const i3 = i * 3;
-      const r = Math.random() * radius;
+      const r = Math.pow(Math.random(), 0.5) * radius; // bias toward center
       const spinAngle = r * spin;
       const branchAngle = ((i % branches) / branches) * Math.PI * 2;
+      const scatter = Math.pow(Math.random(), 3);
+      const scatterDir = Math.random() < 0.5 ? 1 : -1;
+      const randomX = scatter * scatterDir * 0.5 * r;
+      const randomY = scatter * scatterDir * 0.3;
+      const randomZ = scatter * scatterDir * 0.5 * r;
 
-      // Concentrated core: more stars near the center
-      const mixedRandomness = Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1) * 0.3 * r;
-
-      positions[i3] = Math.cos(branchAngle + spinAngle) * r + mixedRandomness;
-      positions[i3 + 1] = (Math.random() - 0.5) * 0.8 * Math.exp(-r / 5); // Tapered vertical spread
-      positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * r + mixedRandomness;
+      positions[i3] = Math.cos(branchAngle + spinAngle) * r + randomX;
+      positions[i3 + 1] = randomY * Math.exp(-r / 8);
+      positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * r + randomZ;
 
       const mixedColor = colorInside.clone().lerp(colorOutside, r / radius);
-      colors[i3] = mixedColor.r;
-      colors[i3 + 1] = mixedColor.g;
-      colors[i3 + 2] = mixedColor.b;
+      // Add some extra brightness near the core
+      const brightness = r < 2 ? 1.5 : 1;
+      colors[i3] = mixedColor.r * brightness;
+      colors[i3 + 1] = mixedColor.g * brightness;
+      colors[i3 + 2] = mixedColor.b * brightness;
     }
     return [positions, colors];
   }, []);
 
-  useFrame((state, delta) => {
+  useFrame((_, delta) => {
     if (pointsRef.current) {
-      pointsRef.current.rotation.y -= delta * 0.03;
+      pointsRef.current.rotation.y -= delta * 0.025;
     }
   });
 
   return (
-    <points ref={pointsRef} position={[0, -2, -5]} rotation={[0.5, 0, 0.2]}>
+    <points ref={pointsRef} position={[0, -3, -6]} rotation={[0.4, 0, 0.15]}>
       <bufferGeometry>
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
         <bufferAttribute attach="attributes-color" args={[colors, 3]} />
       </bufferGeometry>
       <pointsMaterial
-        size={0.02}
+        size={0.018}
         sizeAttenuation={true}
         depthWrite={false}
         blending={THREE.AdditiveBlending}
         vertexColors={true}
         transparent={true}
-        opacity={0.6}
+        opacity={0.85}
+      />
+    </points>
+  );
+};
+
+// A secondary, distant galaxy for depth
+const DistantGalaxy = () => {
+  const ref = useRef<THREE.Points>(null!);
+  const count = 8000;
+
+  const positions = useMemo(() => {
+    const pos = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      const i3 = i * 3;
+      const r = Math.random() * 6;
+      const angle = Math.random() * Math.PI * 2;
+      pos[i3] = Math.cos(angle) * r + (Math.random() - 0.5) * 2;
+      pos[i3 + 1] = (Math.random() - 0.5) * 0.5;
+      pos[i3 + 2] = Math.sin(angle) * r + (Math.random() - 0.5) * 2;
+    }
+    return pos;
+  }, []);
+
+  useFrame((_, delta) => {
+    if (ref.current) ref.current.rotation.y += delta * 0.01;
+  });
+
+  return (
+    <points ref={ref} position={[25, 8, -30]} rotation={[0.3, 0.5, 0]}>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+      </bufferGeometry>
+      <pointsMaterial
+        size={0.06}
+        sizeAttenuation={true}
+        depthWrite={false}
+        blending={THREE.AdditiveBlending}
+        color="#8b5cf6"
+        transparent
+        opacity={0.5}
       />
     </points>
   );
@@ -125,13 +170,17 @@ const EnhancedGalaxy = () => {
 export default function ThreeBackground() {
   return (
     <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: -1 }}>
-      <Canvas camera={{ position: [0, 6, 12], fov: 60 }}>
-        <color attach="background" args={['#070a14']} />
-        <ambientLight intensity={0.2} />
-        <fog attach="fog" args={['#070a14', 5, 25]} />
+      <Canvas camera={{ position: [0, 5, 12], fov: 65 }}>
+        <color attach="background" args={['#050810']} />
+        <ambientLight intensity={0.15} />
+        <fog attach="fog" args={['#050810', 10, 35]} />
 
-        <Stars radius={100} depth={50} count={7000} factor={4} saturation={0} fade speed={1.5} />
-        <EnhancedGalaxy />
+        {/* Dense star field – multiple layers for depth */}
+        <Stars radius={80} depth={80} count={12000} factor={5} saturation={0.2} fade speed={0.5} />
+        <Stars radius={150} depth={120} count={8000} factor={3} saturation={0} fade speed={0.3} />
+
+        <MainGalaxy />
+        <DistantGalaxy />
         <PlanetarySystem />
       </Canvas>
     </div>

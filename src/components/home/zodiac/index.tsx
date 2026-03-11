@@ -34,7 +34,6 @@ export default function Zodiac() {
                 <div className={styles.elementTag}>{sign.element}</div>
                 <div className={styles.iconWrapper}>{sign.icon}</div>
                 <h3>{sign.name}</h3>
-                <span>{sign.date}</span>
               </Link>
             </motion.div>
           ))}

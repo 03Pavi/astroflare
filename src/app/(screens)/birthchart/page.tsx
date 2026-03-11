@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import dynamic from 'next/dynamic';
@@ -17,7 +17,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { MobileDatePicker } from '@mui/x-date-pickers/MobileDatePicker';
 import { MobileTimePicker } from '@mui/x-date-pickers/MobileTimePicker';
-import { TextField, Autocomplete, createTheme, ThemeProvider, Snackbar, Alert } from '@mui/material';
+import { TextField, Autocomplete, createTheme, ThemeProvider, Snackbar, Alert, CircularProgress } from '@mui/material';
 
 // Icons
 import AddIcon from '@mui/icons-material/Add';
@@ -66,6 +66,7 @@ export default function BirthChartPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingChartId, setEditingChartId] = useState<string | null>(null);
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+  const [loadingChartId, setLoadingChartId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     label: '',
@@ -87,6 +88,7 @@ export default function BirthChartPage() {
   // Autocomplete State
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isSearchingLocation, setIsSearchingLocation] = useState(false);
   const suggestionTimeout = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -101,9 +103,11 @@ export default function BirthChartPage() {
     if (!query || query.length < 3) {
       setSuggestions([]);
       setShowSuggestions(false);
+      setIsSearchingLocation(false);
       return;
     }
 
+    setIsSearchingLocation(true);
     try {
       const response = await fetch(
         `/api/location/search?q=${encodeURIComponent(query)}`
@@ -115,6 +119,8 @@ export default function BirthChartPage() {
       }
     } catch (error) {
       console.error('Failed to fetch location suggestions:', error);
+    } finally {
+      setIsSearchingLocation(false);
     }
   };
 
@@ -343,10 +349,17 @@ export default function BirthChartPage() {
                   </div>
                 </div>
 
-                <Link href={`/birthchart/${chart.$id}`} className={styles.reportBtn}>
-                  <AutoAwesomeIcon sx={{ fontSize: '1rem', mr: 1 }} />
-                  View Full Report
-                </Link>
+                <button
+                  className={styles.reportBtn}
+                  onClick={() => { setLoadingChartId(chart.$id); router.push(`/birthchart/${chart.$id}`); }}
+                  disabled={loadingChartId === chart.$id}
+                >
+                  {loadingChartId === chart.$id ? (
+                    <><CircularProgress size={14} sx={{ color: '#fff', mr: 1 }} /> Loading...</>
+                  ) : (
+                    <><AutoAwesomeIcon sx={{ fontSize: '1rem', mr: 1 }} /> View Full Report</>
+                  )}
+                </button>
               </motion.div>
             ))}
           </div>
@@ -434,6 +447,7 @@ export default function BirthChartPage() {
                     <label>City of Birth</label>
                     <Autocomplete
                       freeSolo
+                      loading={isSearchingLocation}
                       options={suggestions}
                       inputValue={formData.birthPlace}
                       getOptionLabel={(option) => typeof option === 'string' ? option : option.display_name}
@@ -456,6 +470,15 @@ export default function BirthChartPage() {
                           required
                           size="small"
                           sx={textFieldSx}
+                          InputProps={{
+                            ...params.InputProps,
+                            endAdornment: (
+                              <React.Fragment>
+                                {isSearchingLocation ? <CircularProgress color="inherit" size={20} /> : null}
+                                {params.InputProps.endAdornment}
+                              </React.Fragment>
+                            ),
+                          }}
                         />
                       )}
                     />

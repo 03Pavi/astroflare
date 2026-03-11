@@ -24,8 +24,54 @@ import { IconButton } from '@mui/material';
 import styles from './page.module.scss';
 import { signs } from '@/constants/zodiac';
 import { getZodiacRangesTillToday, getTodayHoroscopeDate } from '@/lib/zodiac';
+import Image from 'next/image';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import WbSunnyIcon from '@mui/icons-material/WbSunny';
 
 const ThreeBackground = dynamic(() => import('@/components/home/three-background'), { ssr: false });
+
+function UserProfileBanner({ user, primarySunSign, primarySignData }: {
+  user: any;
+  primarySunSign: string | null;
+  primarySignData: any;
+}) {
+  if (!user) return null;
+  return (
+    <motion.div
+      className={styles.profileBanner}
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <div className={styles.profileBannerLeft}>
+        {user.photoURL ? (
+          <Image
+            src={user.photoURL}
+            alt={user.displayName ?? 'avatar'}
+            width={44}
+            height={44}
+            className={styles.profileAvatar}
+          />
+        ) : (
+          <div className={styles.profileAvatarFallback}>
+            <AccountCircleIcon sx={{ fontSize: 44, color: '#a490c2' }} />
+          </div>
+        )}
+        <div className={styles.profileInfo}>
+          <span className={styles.profileName}>{user.displayName ?? 'Explorer'}</span>
+          <span className={styles.profileEmail}>{user.email}</span>
+        </div>
+      </div>
+      {primarySunSign && (
+        <div className={styles.profileSignBadge}>
+          <WbSunnyIcon sx={{ fontSize: '1rem', color: primarySignData?.color || '#f59e0b' }} />
+          <span style={{ color: primarySignData?.color || '#f59e0b' }}>{primarySunSign} Sun</span>
+          <span className={styles.signIcon}>{primarySignData?.icon}</span>
+        </div>
+      )}
+    </motion.div>
+  );
+}
 
 export default function HoroscopePage() {
   const { user, loading: authLoading } = useAuth();
@@ -68,6 +114,9 @@ export default function HoroscopePage() {
       }
     }
   }, [selectedSign, persistentHoroscopeData, dispatch]);
+
+  const primarySunSign = charts.length > 0 ? (charts[0] as any).sunSign ?? null : null;
+  const primarySignData = signs.find(s => s.name.toLowerCase() === primarySunSign?.toLowerCase());
 
   if (authLoading) return null;
 
@@ -120,6 +169,7 @@ export default function HoroscopePage() {
 
       <Container maxWidth="lg" className={styles.container}>
         <div className={styles.header}>
+          <UserProfileBanner user={user} primarySunSign={primarySunSign} primarySignData={primarySignData} />
           <motion.div
             className={styles.aiBadge}
             initial={{ opacity: 0, scale: 0.9 }}

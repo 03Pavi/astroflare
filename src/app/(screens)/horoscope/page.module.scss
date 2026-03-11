@@ -50,6 +50,82 @@
   }
 }
 
+/* ─── User Profile Banner ──────────────── */
+.profileBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 20px;
+  padding: 0.9rem 1.5rem;
+  margin-bottom: 2rem;
+  backdrop-filter: blur(20px);
+  gap: 1rem;
+  flex-wrap: wrap;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+}
+
+.profileBannerLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.profileAvatar {
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(167, 139, 250, 0.4);
+}
+
+.profileAvatarFallback {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profileInfo {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.profileName {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #e2e8f0;
+}
+
+.profileEmail {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.profileSignBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 99px;
+  padding: 0.4rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+
+  .signIcon {
+    font-size: 1.1rem;
+    line-height: 1;
+  }
+}
+
+
 .aiBadge {
   display: inline-flex;
   align-items: center;

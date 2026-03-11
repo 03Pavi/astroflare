@@ -332,11 +332,23 @@
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-size: 0.95rem;
+  font-family: inherit;
 
-  &:hover {
+  &:hover:not(:disabled) {
     background: rgba(255, 255, 255, 0.06);
   }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
 }
+
 
 /* ─── Modal ──────────────────────────────── */
 .modalOverlay {
