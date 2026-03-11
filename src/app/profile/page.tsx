@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { useAuth } from '@/context/auth-context';
 import { logout } from '@/lib/auth';
 import styles from './page.module.scss';
+import { CircularProgress } from '@mui/material';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import FavoriteIcon from '@mui/icons-material/Favorite';
@@ -52,6 +53,7 @@ export default function ProfilePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [displayName, setDisplayName] = useState('');
+  const [loadingRoute, setLoadingRoute] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -63,6 +65,11 @@ export default function ProfilePage() {
   const handleLogout = async () => {
     await logout();
     router.replace('/login');
+  };
+
+  const handleNavigate = (href: string) => {
+    setLoadingRoute(href);
+    router.push(href);
   };
 
   if (loading || !user) return null;
@@ -128,20 +135,26 @@ export default function ProfilePage() {
           <h2 className={styles.sectionTitle}>Your Cosmic Tools</h2>
           <div className={styles.grid}>
             {features.map((f, i) => (
-              <motion.a
+              <motion.div
                 key={f.title}
-                href={f.href}
+                onClick={() => handleNavigate(f.href)}
                 className={styles.featureCard}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.1 * i }}
+                style={{ cursor: 'pointer', position: 'relative' }}
               >
+                {loadingRoute === f.href && (
+                  <div className={styles.cardLoaderOverlay}>
+                    <CircularProgress size={28} sx={{ color: f.color }} />
+                  </div>
+                )}
                 <div className={styles.featureIcon} style={{ color: f.color, background: `${f.color}18` }}>
                   {f.icon}
                 </div>
                 <h3>{f.title}</h3>
                 <p>{f.description}</p>
-              </motion.a>
+              </motion.div>
             ))}
           </div>
         </div>

@@ -9,26 +9,17 @@ import DiamondIcon from '@mui/icons-material/Diamond';
 import AirIcon from '@mui/icons-material/Air';
 import WaterDropIcon from '@mui/icons-material/WaterDrop';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import BusinessCenterIcon from '@mui/icons-material/BusinessCenter';
+import ExploreIcon from '@mui/icons-material/Explore';
+import ReactMarkdown from 'react-markdown';
 import styles from './sign.module.scss';
+import { signs } from '@/constants/zodiac';
+import { getZodiacRangesTillToday, getTodayHoroscopeDate } from '@/lib/zodiac';
 
 const ThreeBackground = dynamic(() => import('@/components/home/three-background'), {
   ssr: false,
 });
-
-const signData: Record<string, any> = {
-  aries: { name: 'Aries', date: 'Mar 21 - Apr 19', element: 'Fire', traits: ['Courageous', 'Determined', 'Confident', 'Enthusiastic'], description: 'As the first sign of the zodiac, Aries is always the first to start anything. They are pioneers and leaders, known for their fiery energy and passion.', color: '#ef4444' },
-  taurus: { name: 'Taurus', date: 'Apr 20 - May 20', element: 'Earth', traits: ['Reliable', 'Patient', 'Practical', 'Devoted'], description: 'Taurus is an earth sign, represented by the bull. Like their celestial spirit animal, Taureans enjoy relaxing in serene, bucolic environments.', color: '#10b981' },
-  gemini: { name: 'Gemini', date: 'May 21 - Jun 20', element: 'Air', traits: ['Adaptable', 'Outgoing', 'Intelligent', 'Curious'], description: 'Gemini is the sign of the twins. They are social butterflies, known for their wit and ability to adapt to any situation with ease.', color: '#3b82f6' },
-  cancer: { name: 'Cancer', date: 'Jun 21 - Jul 22', element: 'Water', traits: ['Tenacious', 'Highly Imaginative', 'Loyal', 'Emotional'], description: 'Cancer is a cardinal water sign. Represented by the crab, this oceanic crustacean seamlessly weaves between the sea and shore.', color: '#6366f1' },
-  leo: { name: 'Leo', date: 'Jul 23 - Aug 22', element: 'Fire', traits: ['Creative', 'Passionate', 'Generous', 'Warm-hearted'], description: 'Leo is the lion of the zodiac. They are natural leaders, confident and bright, often the center of attention in any room.', color: '#f59e0b' },
-  virgo: { name: 'Virgo', date: 'Aug 23 - Sep 22', element: 'Earth', traits: ['Loyal', 'Analytical', 'Kind', 'Hard-working'], description: 'Virgo is an earth sign historically represented by the goddess of wheat and agriculture, an association that speaks to Virgo\'s deep-rooted presence in the material world.', color: '#059669' },
-  libra: { name: 'Libra', date: 'Sep 23 - Oct 22', element: 'Air', traits: ['Cooperative', 'Diplomatic', 'Gracious', 'Fair-minded'], description: 'Libra is an air sign represented by the scales, reflecting Libra\'s fixation on balance and harmony.', color: '#ec4899' },
-  scorpio: { name: 'Scorpio', date: 'Oct 23 - Nov 21', element: 'Water', traits: ['Resourceful', 'Brave', 'Passionate', 'A true friend'], description: 'Scorpio is a water sign that uses emotional energy as fuel, cultivating powerful wisdom through both the physical and unseen realms.', color: '#7c3aed' },
-  sagittarius: { name: 'Sagittarius', date: 'Nov 22 - Dec 21', element: 'Fire', traits: ['Generous', 'Idealistic', 'Great sense of humor'], description: 'Represented by the archer, Sagittarians are always on a quest for knowledge. They love to travel and explore the unknown.', color: '#f43f5e' },
-  capricorn: { name: 'Capricorn', date: 'Dec 22 - Jan 19', element: 'Earth', traits: ['Responsible', 'Disciplined', 'Self-control', 'Good managers'], description: 'The last earth sign of the zodiac, Capricorn is represented by the sea-goat, a mythological creature with the body of a goat and the tail of a fish.', color: '#475569' },
-  aquarius: { name: 'Aquarius', date: 'Jan 20 - Feb 18', element: 'Air', traits: ['Progressive', 'Original', 'Independent', 'Humanitarian'], description: 'Despite the "aqua" in its name, Aquarius is actually the last air sign of the zodiac. They are intellectuals who value community and progress.', color: '#06b6d4' },
-  pisces: { name: 'Pisces', date: 'Feb 19 - Mar 20', element: 'Water', traits: ['Compassionate', 'Artistic', 'Intuitive', 'Gentle', 'Wise'], description: 'Pisces, a water sign, is the last constellation of the zodiac. It\'s symbolized by two fish swimming in opposite directions, representing the constant division of Pisces\'s attention between fantasy and reality.', color: '#8b5cf6' },
-};
 
 const getElementIcon = (element: string) => {
   switch (element) {
@@ -42,7 +33,11 @@ const getElementIcon = (element: string) => {
 
 export default function SignDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = use(params);
-  const sign = signData[resolvedParams.slug];
+  const sign = (signs as any[]).find(s => s.name.toLowerCase() === resolvedParams.slug.toLowerCase());
+
+  const dynamicRanges = getZodiacRangesTillToday();
+  const currentDynamicRange = dynamicRanges.find(r => r.name.toLowerCase() === resolvedParams.slug.toLowerCase())?.formatted;
+  const todayInfo = getTodayHoroscopeDate();
 
   const [horoscope, setHoroscope] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -70,6 +65,29 @@ export default function SignDetailPage({ params }: { params: Promise<{ slug: str
       setLoading(false);
     }
   };
+
+  const extractFieldValue = (keywords: string[]) => {
+    if (!horoscope) return null;
+    for (const keyword of keywords) {
+      const regex = new RegExp(`\\*\\*[^\\*]*?${keyword}[^\\*]*?\\*\\*:?\\s*([\\s\\S]*?)(?=\\*\\*|$)`, 'i');
+      const match = horoscope.match(regex);
+      if (match?.[1]) {
+        const cleaned = match[1].trim()
+          .replace(/^[:\s\*\|\)\(>\-0-9\.]+/, '')
+          .replace(/[\n\s]+$/, '');
+        if (cleaned && cleaned.length > 3) return cleaned;
+      }
+    }
+    return null;
+  };
+
+  const overall = extractFieldValue(['Overall Energy', 'Samanya Shakti', 'General Insight', 'Summary', 'Dainik']);
+  const career = extractFieldValue(['Career', 'Karmik Shakti', 'Karyavastha', 'Naukri', 'Business', 'Work']);
+  const love = extractFieldValue(['Love', 'Prem', 'Relationship', 'Pyaar', 'Romance']);
+  const health = extractFieldValue(['Health', 'Swasthya', 'Fitness']);
+  const luck = extractFieldValue(['Lucky Tip', 'Tip', 'Upay', 'Suggestion']);
+
+  const showStructured = !!(overall || career || love || health || luck);
 
   if (!sign) {
     return (
@@ -99,7 +117,7 @@ export default function SignDetailPage({ params }: { params: Promise<{ slug: str
                 {sign.element} Sign
               </div>
               <h1 className={styles.signName}>{sign.name}</h1>
-              <span className={styles.dateRange}>{sign.date}</span>
+              <span className={styles.dateRange}>{currentDynamicRange || sign.date} • {todayInfo.display}</span>
               <p className={styles.description}>{sign.description}</p>
 
               <div className={styles.traits}>
@@ -151,6 +169,74 @@ export default function SignDetailPage({ params }: { params: Promise<{ slug: str
               <div className={styles.loader}>
                 <CircularProgress size={40} sx={{ color: sign.color }} />
                 <p>Consulting the heavens...</p>
+              </div>
+            ) : showStructured ? (
+              <div className={styles.sections}>
+                {overall && (
+                  <div className={styles.section}>
+                    <div className={styles.sectionIcon} style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>
+                      <ElectricBoltIcon />
+                    </div>
+                    <div className={styles.sectionContent}>
+                      <h3>Overall Energy</h3>
+                      <div className={styles.markdownDesc}>
+                        <ReactMarkdown>{overall}</ReactMarkdown>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {career && (
+                  <div className={styles.section}>
+                    <div className={styles.sectionIcon} style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>
+                      <BusinessCenterIcon />
+                    </div>
+                    <div className={styles.sectionContent}>
+                      <h3>Career</h3>
+                      <div className={styles.markdownDesc}>
+                        <ReactMarkdown>{career}</ReactMarkdown>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {love && (
+                  <div className={styles.section}>
+                    <div className={styles.sectionIcon} style={{ background: 'rgba(236, 72, 153, 0.1)', color: '#ec4899' }}>
+                      <FavoriteIcon />
+                    </div>
+                    <div className={styles.sectionContent}>
+                      <h3>Love</h3>
+                      <div className={styles.markdownDesc}>
+                        <ReactMarkdown>{love}</ReactMarkdown>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {health && (
+                  <div className={styles.section}>
+                    <div className={styles.sectionIcon} style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
+                      <AutoAwesomeIcon />
+                    </div>
+                    <div className={styles.sectionContent}>
+                      <h3>Health</h3>
+                      <div className={styles.markdownDesc}>
+                        <ReactMarkdown>{health}</ReactMarkdown>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {luck && (
+                  <div className={styles.section}>
+                    <div className={styles.sectionIcon} style={{ background: 'rgba(234, 179, 8, 0.1)', color: '#eab308' }}>
+                      <ExploreIcon />
+                    </div>
+                    <div className={styles.sectionContent}>
+                      <h3>Lucky Tip</h3>
+                      <div className={styles.markdownDesc}>
+                        <ReactMarkdown>{luck}</ReactMarkdown>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <p className={styles.horoscopeText}>{horoscope}</p>

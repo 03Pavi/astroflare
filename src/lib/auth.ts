@@ -5,6 +5,7 @@ import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
+  createUserWithEmailAndPassword,
   type User,
 } from 'firebase/auth';
 import { app } from '@/lib/firebase';
@@ -45,6 +46,13 @@ export async function loginWithGoogle() {
 /** Sign in with email + password (Firebase) then save user to Appwrite */
 export async function loginWithEmail(email: string, password: string) {
   const result = await signInWithEmailAndPassword(auth, email, password);
+  await upsertUserInAppwrite(result.user, 'email');
+  return result.user;
+}
+
+/** Sign up with email + password (Firebase) then save user to Appwrite */
+export async function signupWithEmail(email: string, password: string) {
+  const result = await createUserWithEmailAndPassword(auth, email, password);
   await upsertUserInAppwrite(result.user, 'email');
   return result.user;
 }

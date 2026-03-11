@@ -4,6 +4,7 @@ import Link from 'next/link';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import styles from './header.module.scss';
 import { usePathname, useRouter } from 'next/navigation';
 import { appDetails } from '@/constants/app-details';
@@ -25,14 +26,27 @@ export default function Header() {
     ? user.displayName.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
     : 'US';
 
+  const isLoginPage = pathname === '/login' ? true : false;
+
+  // Conditionally show back button on specific pages or nested routes
+  const pathParts = pathname.split('/').filter(Boolean);
+  const showBackButton = pathParts.length > 1 || (pathParts.length === 1 && ['birthchart', 'horoscope', 'zodiac', 'profile'].includes(pathParts[0]));
+
   return (
     <header className={styles.header}>
-      <Link href="/" className={styles.logo}>
-        <div className={styles.iconWrapper}>
-          <AutoAwesomeIcon fontSize="small" />
-        </div>
-        {appDetails.name}
-      </Link>
+      <div className={styles.leftNav}>
+        {showBackButton && (
+          <button className={styles.backBtn} onClick={() => router.back()} title="Go Back">
+            <ArrowBackIcon fontSize="small" />
+          </button>
+        )}
+        <Link href="/" className={styles.logo}>
+          <div className={styles.iconWrapper}>
+            <AutoAwesomeIcon fontSize="small" />
+          </div>
+          {appDetails.name}
+        </Link>
+      </div>
 
       <div className={styles.nav}>
         <div className={styles.divider} />
@@ -65,11 +79,11 @@ export default function Header() {
             </button>
           </>
         ) : (
-          <Link href="/login" className={styles.profileBtn}>
+          <Link href={isLoginPage ? "/signup" : "/login"} className={styles.profileBtn}>
             <div className={styles.avatar}>
               <PersonIcon fontSize="small" />
             </div>
-            Sign In
+            {isLoginPage ? "Sign Up" : "Sign In"}
           </Link>
         )}
       </div>

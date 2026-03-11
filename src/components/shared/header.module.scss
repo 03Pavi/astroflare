@@ -12,6 +12,31 @@
   backdrop-filter: blur(8px);
   background: rgba(15, 23, 42, 0.1);
 
+  .leftNav {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+  }
+
+  .backBtn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+  }
+
   .logo {
     display: flex;
     align-items: center;
@@ -119,6 +144,15 @@
 
   @media (max-width: 768px) {
     padding: 0.75rem 1.25rem;
+
+    .leftNav {
+      gap: 0.75rem;
+    }
+
+    .backBtn {
+      width: 32px;
+      height: 32px;
+    }
 
     .nav {
       gap: 1rem;

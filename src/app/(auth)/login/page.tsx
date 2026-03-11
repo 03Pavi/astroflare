@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
@@ -9,15 +9,28 @@ import GoogleIcon from '@mui/icons-material/Google';
 import EmailIcon from '@mui/icons-material/Email';
 import LockIcon from '@mui/icons-material/Lock';
 import { loginWithGoogle, loginWithEmail } from '@/lib/auth';
+import Link from 'next/link';
+import { useAuth } from '@/context/auth-context';
 
 const ThreeBackground = dynamic(() => import('@/components/home/three-background'), { ssr: false });
 
 export default function LoginPage() {
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (user && !authLoading) {
+      router.replace('/');
+    }
+  }, [user, authLoading, router]);
+
+  if (authLoading || user) {
+    return null; // Or a loading spinner
+  }
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,6 +111,10 @@ export default function LoginPage() {
           <GoogleIcon sx={{ color: '#ea4335' }} />
           Continue with Google
         </button>
+
+        <p className={styles.footerLink}>
+          Don't have an account? <Link href="/signup">Sign Up</Link>
+        </p>
       </motion.div>
     </div>
   );

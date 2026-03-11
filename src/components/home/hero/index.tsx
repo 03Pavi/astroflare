@@ -3,6 +3,7 @@
 import { Box, Typography } from '@mui/material';
 import { motion } from 'framer-motion';
 import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
 
 const ThreeBackground = dynamic(() => import('../three-background'), {
   ssr: false, // Important: Canvas can only run client-side
@@ -19,11 +20,15 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import WbSunnyIcon from '@mui/icons-material/WbSunny';
 import DarknessIcon from '@mui/icons-material/Brightness2';
 import ExploreIcon from '@mui/icons-material/Explore';
+import PersonIcon from '@mui/icons-material/Person';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import styles from './hero.module.scss';
 import { heroContent } from '@/constants/hero';
 import Dock from '../dock';
 
 export default function Hero() {
+  const router = useRouter();
+
   return (
     <Box
       sx={{
@@ -155,10 +160,11 @@ export default function Hero() {
 
       <Dock
         items={[
-          { icon: <HomeIcon fontSize="small" />, label: 'Home', onClick: () => window.scrollTo({ top: 0, behavior: 'smooth' }) },
-          { icon: <StyleIcon fontSize="small" />, label: 'Tarot', onClick: () => alert('Tarot Reading!') },
-          { icon: <PublicIcon fontSize="small" />, label: 'Charts', onClick: () => alert('Birth Charts!') },
-          { icon: <SettingsIcon fontSize="small" />, label: 'Settings', onClick: () => alert('Settings!') },
+          { icon: <HomeIcon fontSize="small" />, label: 'Home', onClick: () => router.push('/') },
+          { icon: <WbSunnyIcon fontSize="small" />, label: 'Horoscope', onClick: () => router.push('/horoscope') },
+          { icon: <AutoAwesomeIcon fontSize="small" />, label: 'AI Oracle', onClick: () => router.push('/chat') },
+          { icon: <PublicIcon fontSize="small" />, label: 'Charts', onClick: () => router.push('/birthchart') },
+          { icon: <PersonIcon fontSize="small" />, label: 'Profile', onClick: () => router.push('/profile') },
         ]}
         panelHeight={68}
         baseItemSize={50}

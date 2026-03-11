@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useState, useEffect } from 'react';
+import { use, useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Container, Grid, CircularProgress } from '@mui/material';
 import dynamic from 'next/dynamic';
@@ -21,6 +21,35 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import PlaceIcon from '@mui/icons-material/Place';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 
+import { signs } from '@/constants/zodiac';
+import LayersIcon from '@mui/icons-material/Layers';
+import PublicIcon from '@mui/icons-material/Public';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import dayjs from 'dayjs';
+
+const NAKSHATRAS = [
+  "Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashira", "Ardra",
+  "Punarvasu", "Pushya", "Ashlesha", "Magha", "Purva Phalguni", "Uttara Phalguni",
+  "Hasta", "Chitra", "Swati", "Vishakha", "Anuradha", "Jyeshtha",
+  "Mula", "Purva Ashadha", "Uttara Ashadha", "Shravana", "Dhanishta", "Shatabhisha",
+  "Purva Bhadrapada", "Uttara Bhadrapada", "Revati"
+];
+
+const SIGN_MAP: Record<string, number> = {
+  "Aries": 0, "Taurus": 1, "Gemini": 2, "Cancer": 3, "Leo": 4, "Virgo": 5,
+  "Libra": 6, "Scorpio": 7, "Sagittarius": 8, "Capricorn": 9, "Aquarius": 10, "Pisces": 11
+};
+
+function getDisplayNakshatra(sign: string, degree: string | number, existingNak?: string) {
+  if (existingNak) return existingNak;
+  const s = SIGN_MAP[sign] || 0;
+  const d = parseFloat(String(degree)) || 0;
+  const absLon = (s * 30) + d;
+  const index = Math.floor(absLon / (360 / 27));
+  return NAKSHATRAS[index % 27];
+}
+
 const ThreeBackground = dynamic(() => import('@/components/home/three-background'), { ssr: false });
 
 export default function BirthChartReportPage({ params }: { params: Promise<{ id: string }> }) {
@@ -32,6 +61,30 @@ export default function BirthChartReportPage({ params }: { params: Promise<{ id:
   const { charts, loading: chartsLoading } = useAppSelector((state) => state.charts);
 
   const [chart, setChart] = useState<any>(null);
+  const [showAllAspects, setShowAllAspects] = useState(false);
+  const reportRef = useRef<HTMLDivElement>(null);
+
+  const handleDownloadPDF = async () => {
+    if (!reportRef.current) return;
+
+    // Show loading or something if needed
+    const canvas = await html2canvas(reportRef.current, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#0B111D',
+      logging: false
+    });
+
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'px',
+      format: [canvas.width, canvas.height]
+    });
+
+    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+    pdf.save(`BirthChart_${chart.label}.pdf`);
+  };
 
   useEffect(() => {
     if (user) {
@@ -43,7 +96,6 @@ export default function BirthChartReportPage({ params }: { params: Promise<{ id:
     if (charts.length > 0) {
       const found = charts.find((c: BirthChart) => c.$id === chartId);
       if (found) {
-        // Try to parse chartData if it exists
         let details = {};
         if (found.chartData) {
           try {
@@ -61,8 +113,7 @@ export default function BirthChartReportPage({ params }: { params: Promise<{ id:
     return (
       <div className={styles.loadingPage}>
         <ThreeBackground />
-        <CircularProgress sx={{ color: '#7c3aed' }} />
-        <p>Consulting the Akashic records...</p>
+        <CircularProgress sx={{ color: '#F59E0B' }} />
       </div>
     );
   }
@@ -71,112 +122,208 @@ export default function BirthChartReportPage({ params }: { params: Promise<{ id:
     return (
       <div className={styles.errorPage}>
         <ThreeBackground />
-        <h1>Chart Not Found</h1>
-        <p>This cosmic map seems to have vanished into a black hole.</p>
+        <h1>Engine Unavailable</h1>
       </div>
     );
   }
 
   const { details } = chart;
 
+  const getZodiacIcon = (signName: string) => {
+    const s = signs.find(s => s.name === signName);
+    return s ? s.icon : '✧';
+  };
+
+  // Roman numerals for domains (Houses)
+  const toRoman = (n: number) => {
+    const map = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
+    return map[n] || n;
+  };
+
   return (
     <div className={styles.page}>
+      <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet" />
       <ThreeBackground />
       <div className={styles.gridOverlay} />
 
-      <Container maxWidth="lg" className={styles.container}>
+      <Container maxWidth="xl" className={styles.container}>
+        {/* STELLAR NAVY HEADER */}
         <motion.div
-          className={styles.header}
+          className={styles.engineHeaderPro}
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <div className={styles.badge}>Natal Report</div>
-          <h1>{chart.label}'s Cosmic Blueprint</h1>
-          <div className={styles.quickInfo}>
-            <span><CalendarTodayIcon /> {new Date(chart.birthDate).toLocaleDateString('en-US', { dateStyle: 'long' })}</span>
-            <span><AccessTimeIcon /> {chart.birthTime}</span>
-            <span><PlaceIcon /> {chart.birthPlace}</span>
+          <div className={styles.headerContent}>
+            <div className={styles.labelRow}>
+              <ExploreIcon fontSize="small" sx={{ color: '#06b6d4' }} />
+              <span className={styles.label}>CELESTIAL ENGINE PRO</span>
+            </div>
+            <h1>Celestial Synthesis</h1>
+            <div className={styles.subText}>
+              Native Chart Analysis &bull; <span>{chart.birthPlace}</span>
+            </div>
+          </div>
+          <div className={styles.actions}>
+            <button className={styles.btnOutline} onClick={handleDownloadPDF}>Export Data</button>
+            <button className={styles.btnPrimary}>Comprehensive Analysis</button>
           </div>
         </motion.div>
 
-        <Grid container spacing={4} className={styles.mainGrid}>
-          {/* Big Three Cards */}
-          <Grid item xs={12} md={4}>
-            <motion.div className={styles.signCard} whileHover={{ y: -5 }} transition={{ type: 'spring', stiffness: 300 }}>
-              <WbSunnyIcon className={styles.sunIcon} />
-              <h3>Sun Sign</h3>
-              <h2>{chart.sunSign || 'Unknown'}</h2>
-              <p>Your core essence, personality, and the divine spark within you.</p>
-            </motion.div>
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <motion.div className={styles.signCard} whileHover={{ y: -5 }} transition={{ type: 'spring', stiffness: 300 }}>
-              <NightsStayIcon className={styles.moonIcon} />
-              <h3>Moon Sign</h3>
-              <h2>{chart.moonSign || 'Unknown'}</h2>
-              <p>Your emotional landscape, subconscious patterns, and inner world.</p>
-            </motion.div>
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <motion.div className={styles.signCard} whileHover={{ y: -5 }} transition={{ type: 'spring', stiffness: 300 }}>
-              <ExploreIcon className={styles.risingIcon} />
-              <h3>Rising Sign</h3>
-              <h2>{chart.risingSign || 'Unknown'}</h2>
-              <p>Your social mask, how others perceive you, and your approach to life.</p>
-            </motion.div>
-          </Grid>
+        <div ref={reportRef} style={{ background: '#0B111D', paddingBottom: '2rem' }}>
+          <Grid container spacing={3}>
+            {/* LEFT COLUMN: Chart + Stats + Details */}
+            <Grid item xs={12} lg={8}>
+              <Grid container spacing={3}>
 
-          {/* Detailed Summary */}
-          <Grid item xs={12}>
-            <motion.div
-              className={styles.summaryCard}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              <div className={styles.cardHeader}>
-                <AutoAwesomeIcon />
-                <h2>Celestial Synthesis</h2>
-              </div>
-              <div className={styles.summaryContent}>
-                <ReactMarkdown>
-                  {details.summary || details.response || "No detailed interpretation available for balanced cosmic energies."}
-                </ReactMarkdown>
-              </div>
-            </motion.div>
-          </Grid>
+                {/* NATAL CHART */}
+                <Grid item xs={12} md={6}>
+                  <motion.div className={styles.dashboardCard} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
+                    <div className={styles.cardHeader}>
+                      <h2>NATAL CHART (D-1)</h2>
+                      <span className={styles.badgeOrange}>NORTH INDIAN</span>
+                    </div>
+                    {details.chart_svg && (
+                      <div className={styles.svgWrapper} dangerouslySetInnerHTML={{ __html: details.chart_svg }} />
+                    )}
+                  </motion.div>
+                </Grid>
 
-          {/* Technical Details */}
-          {(details.nakshatra || details.lagna) && (
-            <Grid item xs={12}>
-              <motion.div
-                className={styles.techGrid}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-              >
-                {details.lagna && (
-                  <div className={styles.techItem}>
-                    <label>Ascendant (Lagna)</label>
-                    <span>{details.lagna}</span>
-                  </div>
-                )}
-                {details.nakshatra && (
-                  <div className={styles.techItem}>
-                    <label>Birth Nakshatra</label>
-                    <span>{details.nakshatra}</span>
-                  </div>
-                )}
-                {details.sunSign && (
-                  <div className={styles.techItem}>
-                    <label>Solar Mansion</label>
-                    <span>{details.sunSign}</span>
-                  </div>
-                )}
-              </motion.div>
+                {/* CORE STATISTICS */}
+                <Grid item xs={12} md={6}>
+                  <motion.div className={styles.dashboardCard} style={{ display: 'flex', flexDirection: 'column', height: '100%' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+                    <div className={styles.cardHeader}>
+                      <h2>CORE STATISTICS</h2>
+                    </div>
+                    <div className={styles.statsList}>
+                      <div className={styles.statRow}>
+                        <div className={styles.statIcon} style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#F59E0B' }}>As</div>
+                        <div className={styles.statText}>
+                          <span className={styles.statLabel}>ASCENDANT</span>
+                          <span className={styles.statValue}>{details.ascendant} <span className={styles.deg}>{details.ascendant_degree}&deg;</span></span>
+                        </div>
+                      </div>
+                      <div className={styles.statRow}>
+                        <div className={styles.statIcon} style={{ background: 'rgba(6, 182, 212, 0.1)', color: '#06b6d4' }}>Su</div>
+                        <div className={styles.statText}>
+                          <span className={styles.statLabel}>SOUL SIGNIFICATOR</span>
+                          <span className={styles.statValue}>Sun in {details.sun_sign}</span>
+                        </div>
+                      </div>
+                      <div className={styles.statRow}>
+                        <div className={styles.statIcon} style={{ background: 'rgba(148, 163, 184, 0.1)', color: '#cbd5e1' }}>Mo</div>
+                        <div className={styles.statText}>
+                          <span className={styles.statLabel}>MIND SIGNIFICATOR</span>
+                          <span className={styles.statValue}>Moon in {details.moon_sign}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className={styles.statsFooter}>
+                      <span>AYANAMSA: LAHIRI</span>
+                      <span>DAY: {(details.day_of_week as string)?.toUpperCase() || 'UNKNOWN'}</span>
+                    </div>
+                  </motion.div>
+                </Grid>
+
+                {/* PLANETARY DETAILS */}
+                <Grid item xs={12}>
+                  <motion.div className={styles.dashboardCard} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
+                    <div className={styles.cardHeader} style={{ marginBottom: 0, paddingBottom: 0 }}>
+                      <h2>PLANETARY DETAILS</h2>
+                      <div className={styles.dots} />
+                    </div>
+                    <div className={styles.tableResponsive}>
+                      <table className={styles.planetTable}>
+                        <thead>
+                          <tr>
+                            <th>PLANET</th>
+                            <th>SIGN</th>
+                            <th>DEGREE</th>
+                            <th>NAKSHATRA</th>
+                            <th>HOUSE</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {details.planets?.map((p: any) => (
+                            <tr key={p.name}>
+                              <td className={styles.boldWhite}>{p.name}{p.isRetrograde ? ' ᴿ' : ''}</td>
+                              <td className={styles.signText}>{p.sign}</td>
+                              <td className={styles.degreeTextCyan}>{p.degree}&deg;</td>
+                              <td className={styles.nakshatraText}>{getDisplayNakshatra(p.sign, p.degree, p.nakshatra)}</td>
+                              <td className={styles.houseText}>{p.house}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </motion.div>
+                </Grid>
+
+              </Grid>
             </Grid>
-          )}
-        </Grid>
+
+            {/* RIGHT COLUMN: Geometry + Dasha */}
+            <Grid item xs={12} lg={4}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+
+                {/* GEOMETRY (ASPECTS) */}
+                <motion.div className={styles.dashboardCard} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
+                  <div className={styles.cardHeader}>
+                    <h2>GEOMETRY</h2>
+                    <span className={styles.badgeCyan}>MAJOR ASPECTS</span>
+                  </div>
+                  <div className={styles.aspectList}>
+                    {details.aspects?.slice(0, showAllAspects ? undefined : 3).map((a: any, i: number) => {
+                      const orbVal = parseFloat(a.orb);
+                      const strength = Math.max(10, 100 - (orbVal * 12));
+                      return (
+                        <div key={i} className={styles.aspectCardPro}>
+                          <div className={styles.aspectTop}>
+                            <span className={styles.aspectPair}>{a.body1} &mdash; {a.body2}</span>
+                            <span className={styles.aspectType}>{a.type}</span>
+                          </div>
+                          <div className={styles.aspectMid}>
+                            <div className={styles.strengthTrack}>
+                              <div className={styles.strengthFill} style={{ width: `${strength}%`, background: strength > 70 ? '#F59E0B' : '#06b6d4' }} />
+                            </div>
+                          </div>
+                          <div className={styles.aspectBot}>
+                            <span>STRENGTH: {Math.round(strength)}%</span>
+                            <span>ORB: {a.orb}&deg;</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <button className={styles.matrixBtn} onClick={() => setShowAllAspects(!showAllAspects)}>
+                    {showAllAspects ? "COLLAPSE VISUALIZATION" : "FULL MATRIX VISUALIZATION"}
+                  </button>
+                </motion.div>
+
+                {/* VIMSOTTARI DASHA */}
+                <motion.div className={styles.dashboardCard} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
+                  <div className={styles.cardHeader}>
+                    <h2>CURRENT VIMSOTTARI DASHA</h2>
+                  </div>
+                  <div className={styles.dashaList}>
+                    {details.dasha?.slice(0, 2).map((d: any, i: number) => {
+                      const isActive = i === 0;
+                      return (
+                        <div key={i} className={`${styles.dashaItem} ${isActive ? styles.dashaActive : ''}`}>
+                          <div className={styles.dashaInfo}>
+                            <div className={styles.dashaTitle}>{d.planet} {isActive ? 'PERIOD' : 'ANTAR'}</div>
+                            <div className={styles.dashaDate}>{isActive ? `Until ${dayjs(d.end).format('MMM YYYY')}` : 'Current Phase'}</div>
+                          </div>
+                          <div className={styles.dashaSymbol}>{d.planet.substring(0, 2)}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+
+              </div>
+            </Grid>
+          </Grid>
+        </div>
       </Container>
     </div>
   );

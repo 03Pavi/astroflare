@@ -2,9 +2,11 @@
   position: relative;
   min-height: 100vh;
   padding: 8rem 1.5rem 4rem;
+
   @media (max-width: 640px) {
     padding: 6rem 1rem 3rem;
   }
+
   background: #020617;
   color: #fff;
   overflow: hidden;
@@ -71,9 +73,11 @@
 .noSign {
   text-align: center;
   padding: 6rem;
+
   @media (max-width: 640px) {
     padding: 2.5rem 1.5rem;
   }
+
   background: rgba(15, 23, 42, 0.4);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.06);
@@ -165,7 +169,6 @@
   display: flex;
   gap: 0.5rem;
   overflow-x: auto;
-  padding-bottom: 1rem;
   scrollbar-width: none;
 
   &::-webkit-scrollbar {
@@ -173,7 +176,33 @@
   }
 
   @media (max-width: 640px) {
-    mask-image: linear-gradient(to right, black 90%, transparent);
+    mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  }
+}
+
+.selectorWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 0.5rem 1rem;
+  border-radius: 100px;
+}
+
+.scrollBtn {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: #94a3b8 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #fff !important;
+  }
+
+  svg {
+    font-size: 1.25rem;
   }
 }
 
@@ -205,7 +234,7 @@
   backdrop-filter: blur(24px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 40px;
-  padding: 5rem;
+  padding: 4rem 5rem;
   position: relative;
   overflow: hidden;
 
@@ -224,10 +253,41 @@
   }
 }
 
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 3rem;
+  margin-bottom: 2.5rem;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+  }
+}
+
+.signInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  h2 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin: 0;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+}
+
 .signIconWrapper {
   position: relative;
   width: 90px;
   height: 90px;
+  flex-shrink: 0;
 }
 
 .mainSignIcon {
@@ -313,7 +373,42 @@
 .reading {
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
+  gap: 3rem;
+}
+
+.signNature {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 24px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.signDescription {
+  color: #94a3b8;
+  font-size: 1.1rem;
+  line-height: 1.7;
+  margin: 0;
+}
+
+.traits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.traitBadge {
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid;
+  border-radius: 99px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  backdrop-filter: blur(4px);
 }
 
 .lagnaBox {
@@ -448,6 +543,28 @@
   display: flex;
   flex-direction: column;
   gap: 3rem;
+}
+
+.lagnaSkeleton {
+  margin-bottom: 1rem;
+}
+
+.sectionSkeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 4rem;
+}
+
+.skeletonItem {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.skeletonHeader {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
 }
 
 .learnMore {

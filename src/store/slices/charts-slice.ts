@@ -24,11 +24,11 @@ const ASTRO_API_URL = '/api/birthchart';
 export const addChart = createAsyncThunk(
   'charts/addChart',
   async (
-    payload: { userId: string; label: string; dob: string; time: string; place: string },
+    payload: { userId: string; label: string; dob: string; time: string; place: string; lat?: string; lon?: string },
     { rejectWithValue }
   ) => {
     try {
-      // 1. Call local server-side API (which calls the worker)
+      // 1. Call local server-side API (which calls the worker or now calculates locally)
       const response = await fetch(ASTRO_API_URL, {
         method: 'POST',
         headers: {
@@ -38,11 +38,14 @@ export const addChart = createAsyncThunk(
           dob: payload.dob, // YYYY-MM-DD
           time: payload.time,
           place: payload.place,
+          lat: payload.lat,
+          lon: payload.lon,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch celestial details from API');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch celestial details from API');
       }
 
       const apiData = await response.json();
@@ -61,7 +64,8 @@ export const addChart = createAsyncThunk(
         moonSign: apiData.moon_sign || '',
         risingSign: apiData.ascendant || apiData.rising_sign || '',
         chartData: JSON.stringify(apiData),
-        // You can add more fields from apiData if needed
+        latitude: payload.lat ? parseFloat(payload.lat) : undefined,
+        longitude: payload.lon ? parseFloat(payload.lon) : undefined,
       };
 
       // 2. Save to Appwrite
@@ -109,7 +113,7 @@ export const removeChart = createAsyncThunk(
 export const editChart = createAsyncThunk(
   'charts/editChart',
   async (
-    payload: { chartId: string; userId: string; label: string; dob: string; time: string; place: string },
+    payload: { chartId: string; userId: string; label: string; dob: string; time: string; place: string; lat?: string; lon?: string },
     { rejectWithValue }
   ) => {
     try {
@@ -123,11 +127,14 @@ export const editChart = createAsyncThunk(
           dob: payload.dob,
           time: payload.time,
           place: payload.place,
+          lat: payload.lat,
+          lon: payload.lon,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch celestial details from API');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch celestial details from API');
       }
 
       const apiData = await response.json();
@@ -141,6 +148,8 @@ export const editChart = createAsyncThunk(
         moonSign: apiData.moon_sign || '',
         risingSign: apiData.ascendant || apiData.rising_sign || '',
         chartData: JSON.stringify(apiData),
+        latitude: payload.lat ? parseFloat(payload.lat) : undefined,
+        longitude: payload.lon ? parseFloat(payload.lon) : undefined,
       };
 
       // 2. Update in Appwrite
