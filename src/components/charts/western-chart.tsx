@@ -26,6 +26,7 @@ type House = {
   id: number;
   path: string;
   textPos: { x: number; y: number };
+  planetPos: { x: number; y: number };
   label: string;
 };
 
@@ -86,18 +87,18 @@ const BirthChart: React.FC<BirthChartProps> = ({ details }) => {
   /* ---------------- HOUSES ---------------- */
 
   const houses: House[] = [
-    { id: 1, path: "M250,250 L125,125 L250,0 L375,125 Z", textPos: { x: 250, y: 85 }, label: "Lagna / Body & Identity" },
-    { id: 2, path: "M125,125 L0,0 L250,0 Z", textPos: { x: 125, y: 35 }, label: "Wealth / Family / Speech" },
-    { id: 3, path: "M125,125 L0,0 L0,250 Z", textPos: { x: 35, y: 125 }, label: "Siblings / Courage / Efforts" },
-    { id: 4, path: "M250,250 L125,125 L0,250 L125,375 Z", textPos: { x: 85, y: 250 }, label: "Mother / Home / Comfort" },
-    { id: 5, path: "M125,375 L0,250 L0,500 Z", textPos: { x: 35, y: 375 }, label: "Children / Creativity / Wisdom" },
-    { id: 6, path: "M125,375 L0,500 L250,500 Z", textPos: { x: 125, y: 465 }, label: "Debts / Enemies / Health" },
-    { id: 7, path: "M250,250 L125,375 L250,500 L375,375 Z", textPos: { x: 250, y: 415 }, label: "Partners / Marriage" },
-    { id: 8, path: "M375,375 L250,500 L500,500 Z", textPos: { x: 375, y: 465 }, label: "Longevity / Transformation" },
-    { id: 9, path: "M375,375 L500,500 L500,250 Z", textPos: { x: 465, y: 375 }, label: "Fortune / Higher Learning" },
-    { id: 10, path: "M250,250 L375,375 L500,250 L375,125 Z", textPos: { x: 415, y: 250 }, label: "Career / Social Status" },
-    { id: 11, path: "M375,125 L500,250 L500,0 Z", textPos: { x: 465, y: 125 }, label: "Gains / Social Circle" },
-    { id: 12, path: "M375,125 L500,0 L250,0 Z", textPos: { x: 375, y: 35 }, label: "Losses / Spirituality" }
+    { id: 1, path: "M250,250 L125,125 L250,0 L375,125 Z", textPos: { x: 250, y: 85 }, planetPos: { x: 250, y: 135 }, label: "Lagna / Body & Identity" },
+    { id: 2, path: "M125,125 L0,0 L250,0 Z", textPos: { x: 125, y: 35 }, planetPos: { x: 125, y: 60 }, label: "Wealth / Family / Speech" },
+    { id: 3, path: "M125,125 L0,0 L0,250 Z", textPos: { x: 35, y: 125 }, planetPos: { x: 60, y: 125 }, label: "Siblings / Courage / Efforts" },
+    { id: 4, path: "M250,250 L125,125 L0,250 L125,375 Z", textPos: { x: 85, y: 250 }, planetPos: { x: 140, y: 250 }, label: "Mother / Home / Comfort" },
+    { id: 5, path: "M125,375 L0,250 L0,500 Z", textPos: { x: 35, y: 375 }, planetPos: { x: 60, y: 375 }, label: "Children / Creativity / Wisdom" },
+    { id: 6, path: "M125,375 L0,500 L250,500 Z", textPos: { x: 125, y: 465 }, planetPos: { x: 125, y: 440 }, label: "Debts / Enemies / Health" },
+    { id: 7, path: "M250,250 L125,375 L250,500 L375,375 Z", textPos: { x: 250, y: 415 }, planetPos: { x: 250, y: 360 }, label: "Partners / Marriage" },
+    { id: 8, path: "M375,375 L250,500 L500,500 Z", textPos: { x: 375, y: 465 }, planetPos: { x: 375, y: 440 }, label: "Longevity / Transformation" },
+    { id: 9, path: "M375,375 L500,500 L500,250 Z", textPos: { x: 465, y: 375 }, planetPos: { x: 440, y: 375 }, label: "Fortune / Higher Learning" },
+    { id: 10, path: "M250,250 L375,375 L500,250 L375,125 Z", textPos: { x: 415, y: 250 }, planetPos: { x: 360, y: 250 }, label: "Career / Social Status" },
+    { id: 11, path: "M375,125 L500,250 L500,0 Z", textPos: { x: 465, y: 125 }, planetPos: { x: 440, y: 125 }, label: "Gains / Social Circle" },
+    { id: 12, path: "M375,125 L500,0 L250,0 Z", textPos: { x: 375, y: 35 }, planetPos: { x: 375, y: 60 }, label: "Losses / Spirituality" }
   ];
 
   const getSignForHouse = (houseIndex: number): string | number => {
@@ -252,6 +253,21 @@ const BirthChart: React.FC<BirthChartProps> = ({ details }) => {
                   >
                     {getSignForHouse(house.id)}
                   </text>
+
+                  {/* Render Planets in the House */}
+                  {(planetsByHouse[house.id] || []).map((planet, index) => (
+                    <text
+                      key={planet.name}
+                      x={house.planetPos.x}
+                      y={house.planetPos.y + index * 12}
+                      textAnchor="middle"
+                      fontWeight="700"
+                      fontSize={10}
+                      fill="#FFFFFF"
+                    >
+                      {planet.name.substring(0, 2)}
+                    </text>
+                  ))}
                 </g>
               );
             })}
