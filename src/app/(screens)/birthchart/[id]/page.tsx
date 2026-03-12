@@ -4,8 +4,6 @@ import { use, useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Container, Grid, CircularProgress } from '@mui/material';
 import dynamic from 'next/dynamic';
-import ReactMarkdown from 'react-markdown';
-import Link from 'next/link'; // Added Link import
 import { useAuth } from '@/context/auth-context';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { fetchUserCharts } from '@/store/slices/charts-slice';
@@ -13,20 +11,13 @@ import { type BirthChart } from '@/lib/charts';
 import styles from './report.module.scss';
 
 // Icons
-import WbSunnyIcon from '@mui/icons-material/WbSunny';
-import NightsStayIcon from '@mui/icons-material/NightsStay';
 import ExploreIcon from '@mui/icons-material/Explore';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import PlaceIcon from '@mui/icons-material/Place';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 
 import { signs } from '@/constants/zodiac';
-import LayersIcon from '@mui/icons-material/Layers';
-import PublicIcon from '@mui/icons-material/Public';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import dayjs from 'dayjs';
+import NatalChart from '@/components/charts/western-chart';
 
 const NAKSHATRAS = [
   "Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashira", "Ardra",
@@ -48,6 +39,28 @@ function getDisplayNakshatra(sign: string, degree: string | number, existingNak?
   const absLon = (s * 30) + d;
   const index = Math.floor(absLon / (360 / 27));
   return NAKSHATRAS[index % 27];
+}
+
+function normalizeDetails(raw: any) {
+  if (!raw || typeof raw !== 'object') return {};
+
+  const planets = Array.isArray(raw.planets)
+    ? raw.planets
+        .filter((planet: any) => planet?.name && planet.name !== 'ayanamsa')
+        .map((planet: any) => ({
+          ...planet,
+          retrograde: Boolean(planet.retrograde),
+        }))
+    : [];
+
+  return {
+    ...raw,
+    ascendant: raw.ascendant || raw.rising_sign || '',
+    ascendant_degree: raw.ascendant_degree ?? null,
+    planets,
+    aspects: Array.isArray(raw.aspects) ? raw.aspects : [],
+    dashas: Array.isArray(raw.dashas) ? raw.dashas : [],
+  };
 }
 
 const ThreeBackground = dynamic(() => import('@/components/home/three-background'), { ssr: false });
@@ -99,12 +112,12 @@ export default function BirthChartReportPage({ params }: { params: Promise<{ id:
         let details = {};
         if (found.chartData) {
           try {
-            details = JSON.parse(found.chartData);
+            details = normalizeDetails(JSON.parse(found.chartData));
           } catch (e) {
             console.error("Failed to parse chart data", e);
           }
         }
-        setChart({ ...found, details });
+        setChart({ details });
       }
     }
   }, [charts, chartId]);
@@ -127,6 +140,7 @@ export default function BirthChartReportPage({ params }: { params: Promise<{ id:
     );
   }
 
+  console.log(chart,'helllo')
   const { details } = chart;
 
   const getZodiacIcon = (signName: string) => {
@@ -182,8 +196,12 @@ export default function BirthChartReportPage({ params }: { params: Promise<{ id:
                       <h2>NATAL CHART (D-1)</h2>
                       <span className={styles.badgeOrange}>NORTH INDIAN</span>
                     </div>
-                    {details.chart_svg && (
+                    {details.chart_svg ? (
                       <div className={styles.svgWrapper} dangerouslySetInnerHTML={{ __html: details.chart_svg }} />
+                    ) : (
+                      <div className={styles.svgWrapper}>
+                        <NatalChart details={details} />
+                      </div>
                     )}
                   </motion.div>
                 </Grid>
@@ -199,7 +217,12 @@ export default function BirthChartReportPage({ params }: { params: Promise<{ id:
                         <div className={styles.statIcon} style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#F59E0B' }}>As</div>
                         <div className={styles.statText}>
                           <span className={styles.statLabel}>ASCENDANT</span>
-                          <span className={styles.statValue}>{details.ascendant} <span className={styles.deg}>{details.ascendant_degree}&deg;</span></span>
+                          <span className={styles.statValue}>
+                            {details.ascendant}
+                            {details.ascendant_degree !== null && details.ascendant_degree !== undefined ? (
+                              <span className={styles.deg}>{details.ascendant_degree}&deg;</span>
+                            ) : null}
+                          </span>
                         </div>
                       </div>
                       <div className={styles.statRow}>
@@ -245,7 +268,7 @@ export default function BirthChartReportPage({ params }: { params: Promise<{ id:
                         <tbody>
                           {details.planets?.map((p: any) => (
                             <tr key={p.name}>
-                              <td className={styles.boldWhite}>{p.name}{p.isRetrograde ? ' ᴿ' : ''}</td>
+                              <td className={styles.boldWhite}>{p.name}{p.retrograde ? ' ᴿ' : ''}</td>
                               <td className={styles.signText}>{p.sign}</td>
                               <td className={styles.degreeTextCyan}>{p.degree}&deg;</td>
                               <td className={styles.nakshatraText}>{getDisplayNakshatra(p.sign, p.degree, p.nakshatra)}</td>

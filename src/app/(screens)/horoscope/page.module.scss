@@ -1,15 +1,14 @@
 .page {
   position: relative;
   min-height: 100vh;
-  padding: 8rem 1.5rem 4rem;
-
-  @media (max-width: 640px) {
-    padding: 6rem 1rem 3rem;
-  }
-
+  padding: 6rem 1.5rem 4rem;
   background: #020617;
   color: #fff;
-  overflow: hidden;
+  overflow-x: hidden;
+
+  @media (max-width: 640px) {
+    padding: 4rem 1rem 2rem;
+  }
 }
 
 .gridOverlay {
@@ -28,64 +27,77 @@
   position: relative;
   z-index: 10;
   max-width: 1000px;
+  margin: 0 auto;
 }
 
-.header {
-  text-align: center;
-  margin-bottom: 4.5rem;
-
-  h1 {
-    font-size: 4rem;
-    font-weight: 800;
-    margin-bottom: 0.75rem;
-    background: linear-gradient(to right, #fff, #94a3b8);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  p {
-    color: #94a3b8;
-    font-size: 1.25rem;
-  }
-}
-
-/* ─── User Profile Banner ──────────────── */
+/* ─── Premium Profile Banner ──────────────── */
 .profileBanner {
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 0.8rem 1.5rem;
+  margin-bottom: 4rem;
+
+  @media (max-width: 900px) {
+    padding: 1rem;
+    margin-bottom: 2.5rem;
+  }
+}
+
+.profileBannerMain {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 20px;
-  padding: 0.9rem 1.5rem;
-  margin-bottom: 2rem;
-  backdrop-filter: blur(20px);
-  gap: 1rem;
-  flex-wrap: wrap;
+  gap: 1.5rem;
 
-  @media (max-width: 640px) {
+  @media (max-width: 900px) {
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.75rem;
+  }
+}
+
+.bannerLeftSection {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.backBtnWrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(-2px);
   }
 }
 
 .profileBannerLeft {
   display: flex;
   align-items: center;
-  gap: 0.9rem;
+  gap: 1rem;
 }
 
 .profileAvatar {
   border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid rgba(167, 139, 250, 0.4);
+  border: 2px solid rgba(56, 189, 248, 0.5);
 }
 
 .profileAvatarFallback {
-  width: 44px;
-  height: 44px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #1e293b;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -94,475 +106,363 @@
 .profileInfo {
   display: flex;
   flex-direction: column;
-  text-align: left;
 }
 
 .profileName {
+  font-size: 0.95rem;
   font-weight: 700;
-  font-size: 1rem;
-  color: #e2e8f0;
+  color: #fff;
 }
 
 .profileEmail {
   font-size: 0.8rem;
-  color: #64748b;
+  color: #94a3b8;
+  letter-spacing: 0.02em;
 }
 
-.profileSignBadge {
+.profileBannerRight {
+  flex-shrink: 0;
+}
+
+.controlsGroup {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  background: rgba(245, 158, 11, 0.08);
-  border: 1px solid rgba(245, 158, 11, 0.2);
-  border-radius: 99px;
-  padding: 0.4rem 1rem;
+  gap: 1rem;
+}
+
+.currentSignBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 12px;
+  padding: 0.5rem 1rem;
   font-size: 0.875rem;
   font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
 
-  .signIcon {
+  .signEmoji {
     font-size: 1.1rem;
-    line-height: 1;
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
   }
 }
 
+.profileSwitchBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 10px;
+  transition: all 0.2s;
+
+  &:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.05);
+  }
+}
+
+.horizontalSwitcher {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.35rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.switcherItem {
+  padding: 0.4rem 0.9rem;
+  border-radius: 9px;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+
+  &:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  &.switcherActive {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.closeSwitcher {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  margin-left: 0.25rem;
+
+  &:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+  }
+}
+
+/* ─── Title Section ─────────────────────── */
+.header {
+  text-align: center;
+  margin-bottom: 4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  h1 {
+    font-size: 4rem;
+    font-weight: 800;
+    margin: 1.5rem 0 0.5rem;
+    color: #fff;
+    letter-spacing: -0.03em;
+
+    @media (max-width: 640px) {
+      font-size: 2.5rem;
+    }
+  }
+
+  p {
+    color: #94a3b8;
+    font-size: 1.25rem;
+    font-weight: 500;
+  }
+}
 
 .aiBadge {
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
-  padding: 0.7rem 1.4rem;
-  background: rgba(234, 179, 8, 0.1);
+  padding: 0.5rem 1.25rem;
+  background: rgba(234, 179, 8, 0.05);
   border: 1px solid rgba(234, 179, 8, 0.2);
   border-radius: 99px;
   color: #fbbf24;
-  font-size: 0.85rem;
-  font-weight: 700;
+  font-size: 0.75rem;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.15em;
-  margin-bottom: 1.5rem;
-
-  svg {
-    font-size: 1.1rem;
-  }
+  letter-spacing: 0.1em;
 }
 
-.noSign {
-  text-align: center;
-  padding: 6rem;
-
-  @media (max-width: 640px) {
-    padding: 2.5rem 1.5rem;
-  }
-
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 32px;
-  max-width: 700px;
-  margin: 0 auto;
-
-  h2 {
-    font-size: 2rem;
-    margin-bottom: 1rem;
-  }
-
-  p {
-    color: #94a3b8;
-    margin-bottom: 2.5rem;
-    font-size: 1.1rem;
-    line-height: 1.6;
-  }
-}
-
-.actions {
+/* ─── Sign Tabs ─────────────────────────── */
+.selectorWrapper {
+  max-width: 900px;
+  margin: 0 auto 3rem;
   display: flex;
-  justify-content: center;
-  margin-bottom: 4rem;
-}
-
-.primaryBtn {
-  background: #7c3aed;
-  color: #fff;
-  padding: 1rem 2.5rem;
-  border-radius: 12px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.2s;
-
-  &:hover {
-    background: #8b5cf6;
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px -5px rgba(124, 58, 237, 0.4);
-  }
-}
-
-.signPicker {
-  h3 {
-    font-size: 1.5rem;
-    margin-bottom: 2rem;
-    color: #cbd5e1;
-  }
-}
-
-.signGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 1rem;
-}
-
-.signSmallBtn {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 1.25rem;
-  border-radius: 16px;
-  color: #fff;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-  transition: all 0.2s;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.12);
-    transform: translateY(-2px);
-  }
-
-  span {
-    font-size: 0.9rem;
-    font-weight: 500;
-  }
-}
-
-.horoscopeContent {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
+  gap: 1.5rem;
 }
 
 .signSelector {
+  flex: 1;
   display: flex;
-  gap: 0.5rem;
+  gap: 0.75rem;
   overflow-x: auto;
+  padding: 0.5rem;
   scrollbar-width: none;
 
   &::-webkit-scrollbar {
     display: none;
   }
-
-  @media (max-width: 640px) {
-    mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-  }
-}
-
-.selectorWrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  padding: 0.5rem 1rem;
-  border-radius: 100px;
-}
-
-.scrollBtn {
-  background: rgba(255, 255, 255, 0.05) !important;
-  color: #94a3b8 !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.1) !important;
-    color: #fff !important;
-  }
-
-  svg {
-    font-size: 1.25rem;
-  }
 }
 
 .signTab {
-  padding: 0.75rem 1.5rem;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 100px;
+  padding: 0.75rem 1.75rem;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
   color: #94a3b8;
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
-  transition: all 0.2s;
 
   &:hover {
     color: #fff;
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.05);
   }
 
   &.active {
     background: #fff;
     color: #020617;
-    border-color: #fff;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
   }
 }
 
+/* ─── Horoscope Card ────────────────────── */
 .horoscopeCard {
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(24px);
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(32px);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 40px;
-  padding: 4rem 5rem;
+  border-radius: 32px;
+  padding: 3rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   position: relative;
   overflow: hidden;
 
   &::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 8px;
-    height: 100%;
-    background: linear-gradient(to bottom, #7c3aed, #ec4899);
+    inset: 0;
+    padding: 1px;
+    border-radius: 32px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent, rgba(99, 102, 241, 0.2));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
   }
 
   @media (max-width: 640px) {
-    padding: 3rem 2rem;
+    padding: 1.5rem;
   }
 }
 
 .cardHeader {
   display: flex;
   align-items: center;
-  gap: 3rem;
-  margin-bottom: 2.5rem;
+  gap: 2.5rem;
+  margin-bottom: 3rem;
 
   @media (max-width: 640px) {
     flex-direction: column;
-    align-items: center;
     text-align: center;
     gap: 1.5rem;
-    margin-bottom: 3rem;
-  }
-}
-
-.signInfo {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-
-  h2 {
-    font-size: 3.5rem;
-    font-weight: 800;
-    margin: 0;
-    line-height: 1.1;
-    letter-spacing: -0.02em;
   }
 }
 
 .signIconWrapper {
-  position: relative;
-  width: 90px;
-  height: 90px;
   flex-shrink: 0;
 }
 
 .mainSignIcon {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, #4c1d95, #7c3aed);
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.25), rgba(79, 70, 229, 0.25));
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
+  width: 120px;
+  height: 120px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  font-size: 4rem;
   color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-  font-size: 3.5rem;
-  font-weight: 400;
-  line-height: 1;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 
-  svg {
-    font-size: 3rem;
-    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+  .sparkleIcon {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 32px;
+    height: 32px;
+    background: #fbbf24;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #000;
+  }
+}
+
+.headerInfo {
+  flex: 1;
+
+  .signTitleRow {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 0.25rem;
+
+    @media (max-width: 640px) {
+      justify-content: center;
+    }
+
+    h1 {
+      font-size: 4rem;
+      font-weight: 800;
+      margin: 0;
+      line-height: 1;
+    }
+
+    .sanskritName {
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: rgba(255, 255, 255, 0.4);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 0.25rem 0.75rem;
+      border-radius: 8px;
+    }
   }
 
-  @media (max-width: 640px) {
-    font-size: 2.75rem;
+  .dateMeta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #94a3b8;
+    font-size: 1rem;
+    font-weight: 500;
+
+    @media (max-width: 640px) {
+      justify-content: center;
+    }
 
     svg {
-      font-size: 2.5rem;
+      font-size: 1.1rem;
+      opacity: 0.7;
     }
   }
 }
 
-.sparkleIcon {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  width: 32px;
-  height: 32px;
-  background: #1e1b4b;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
+.actions {
   display: flex;
-  align-items: center;
+  gap: 1.25rem;
+  margin-top: 2rem;
   justify-content: center;
-  color: #fbbf24;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-  z-index: 2;
-
-  svg {
-    font-size: 1.1rem;
-    filter: drop-shadow(0 0 5px rgba(251, 191, 36, 0.5));
-  }
 }
 
-.kanyaBadge {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 0.25rem 0.75rem;
-  border-radius: 99px;
-  font-size: 0.75rem;
-  color: #94a3b8;
-  font-weight: 600;
-  height: fit-content;
-}
-
-.titleRow {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.dateRow {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-  color: #94a3b8;
-  font-weight: 500;
-}
-
-/* ─── Reading Area ───────────────────── */
-.reading {
-  display: flex;
-  flex-direction: column;
-  gap: 3rem;
-}
-
-.signNature {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 24px;
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.signDescription {
-  color: #94a3b8;
-  font-size: 1.1rem;
-  line-height: 1.7;
-  margin: 0;
-}
-
-.traits {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-
-.traitBadge {
-  padding: 0.5rem 1rem;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid;
-  border-radius: 99px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  backdrop-filter: blur(4px);
-}
-
-.lagnaBox {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 20px;
-  padding: 1.25rem 1.75rem;
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.lagnaIcon {
-  width: 48px;
-  height: 48px;
-  background: rgba(124, 58, 237, 0.1);
-  color: #a78bfa;
+.primaryBtn {
+  background: #fff;
+  color: #000;
+  padding: 0.9rem 2rem;
   border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s;
 
-.lagnaInfo {
-  label {
-    display: block;
-    font-size: 0.7rem;
-    font-weight: 700;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 0.25rem;
-  }
-
-  p {
-    font-size: 1.15rem;
-    font-weight: 600;
-    color: #e2e8f0;
-  }
-}
-
-.markdownContent,
-.markdownDesc {
-  color: #cbd5e1;
-  font-size: 1.15rem;
-  line-height: 1.8;
-
-  p {
-    margin-bottom: 1.25rem;
-  }
-
-  strong {
-    color: #fff;
-    font-weight: 700;
-  }
-
-  ul {
-    margin-bottom: 1.5rem;
-    padding-left: 1.5rem;
-  }
-
-  li {
-    margin-bottom: 0.5rem;
-  }
-
-  h1,
-  h2,
-  h3 {
-    margin: 2.5rem 0 1rem;
-    color: #fff;
-    font-weight: 700;
+  &:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: translateY(-2px);
   }
 }
 
 .sections {
   display: flex;
   flex-direction: column;
-  gap: 3.5rem;
+  gap: 3rem;
 }
 
 .section {
@@ -585,7 +485,7 @@
   flex-shrink: 0;
 
   svg {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
   }
 }
 
@@ -593,97 +493,110 @@
   flex: 1;
 
   h3 {
-    font-size: 1.35rem;
+    font-size: 1.25rem;
     font-weight: 700;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
     color: #fff;
   }
 
-  .quote {
-    font-size: 1.25rem;
-    font-style: italic;
-    color: #94a3b8;
-    margin-bottom: 1.25rem;
-    padding-left: 1rem;
-    border-left: 3px solid rgba(255, 255, 255, 0.1);
-  }
-
-  .desc {
-    font-size: 1.15rem;
-    line-height: 1.7;
+  .markdownDesc {
     color: #cbd5e1;
+    font-size: 1.1rem;
+    line-height: 1.7;
   }
 }
 
-.skeletonContainer {
-  display: flex;
-  flex-direction: column;
-  gap: 3rem;
-}
-
-.lagnaSkeleton {
+.quote {
+  font-style: italic;
+  color: #94a3b8;
+  border-left: 2px solid rgba(255, 255, 255, 0.1);
+  padding-left: 1rem;
   margin-bottom: 1rem;
-}
-
-.sectionSkeleton {
-  display: flex;
-  flex-direction: column;
-  gap: 4rem;
-}
-
-.skeletonItem {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.skeletonHeader {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
+  font-size: 1rem;
 }
 
 .learnMore {
   margin-top: 4rem;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  padding: 1.5rem 2rem;
-  border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  color: #94a3b8;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 24px;
   text-decoration: none;
-  transition: all 0.2s;
+  color: #94a3b8;
+  transition: all 0.3s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.06);
     color: #fff;
-
-    .learnMoreContent span {
-      padding-left: 4px;
-    }
-  }
-
-  .learnMoreContent {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-
-    svg {
-      color: #a78bfa;
-    }
-
-    span {
-      transition: all 0.2s;
-      font-weight: 500;
-    }
+    transform: translateY(-2px);
   }
 }
 
-@media (max-width: 640px) {
-  .header h1 {
-    font-size: 2.75rem;
+.learnMoreContent {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  span {
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+}
+
+.loader {
+  padding: 4rem 0;
+  text-align: center;
+  color: #94a3b8;
+}
+
+.noSign {
+  text-align: center;
+  padding: 4rem 0;
+
+  h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    color: #94a3b8;
+    margin-bottom: 2rem;
+  }
+}
+
+.signPicker {
+  margin-top: 3rem;
+  text-align: center;
+
+  h3 {
+    margin-bottom: 1.5rem;
+    font-size: 1.25rem;
+  }
+}
+
+.signGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 1rem;
+}
+
+.signSmallBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
   }
 }

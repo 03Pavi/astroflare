@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import { Container, Skeleton } from '@mui/material';
+import { useEffect, useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Container, Skeleton, IconButton } from '@mui/material';
 import dynamic from 'next/dynamic';
 import ReactMarkdown from 'react-markdown';
 import { useAuth } from '@/context/auth-context';
@@ -12,30 +13,40 @@ import { fetchHoroscope } from '@/store/slices/horoscope-slice';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import ExploreIcon from '@mui/icons-material/Explore';
 import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
+import SyncIcon from '@mui/icons-material/Sync';
+import CloseIcon from '@mui/icons-material/Close';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import PeopleIcon from '@mui/icons-material/People';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import BusinessCenterIcon from '@mui/icons-material/BusinessCenter';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import Link from 'next/link';
-import { useRef } from 'react';
+import WbSunnyIcon from '@mui/icons-material/WbSunny';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
-import { IconButton } from '@mui/material';
+import Link from 'next/link';
+import Image from 'next/image';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import styles from './page.module.scss';
 import { signs } from '@/constants/zodiac';
 import { getZodiacRangesTillToday, getTodayHoroscopeDate } from '@/lib/zodiac';
-import Image from 'next/image';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import WbSunnyIcon from '@mui/icons-material/WbSunny';
+import { useZodiac } from '@/context/zodiac-context';
 
 const ThreeBackground = dynamic(() => import('@/components/home/three-background'), { ssr: false });
 
-function UserProfileBanner({ user, primarySunSign, primarySignData }: {
+function UserProfileBanner({ user, activeChart, charts }: {
   user: any;
-  primarySunSign: string | null;
-  primarySignData: any;
+  activeChart: any;
+  charts: any[];
 }) {
+  const router = useRouter();
+  const { setActiveChart } = useZodiac();
+  const [showSwitcher, setShowSwitcher] = useState(false);
+
   if (!user) return null;
+
+  const currentSignData = signs.find(s => s.name.toLowerCase() === activeChart?.sunSign?.toLowerCase());
+
   return (
     <motion.div
       className={styles.profileBanner}
@@ -43,66 +54,115 @@ function UserProfileBanner({ user, primarySunSign, primarySignData }: {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <div className={styles.profileBannerLeft}>
-        {user.photoURL ? (
-          <Image
-            src={user.photoURL}
-            alt={user.displayName ?? 'avatar'}
-            width={44}
-            height={44}
-            className={styles.profileAvatar}
-          />
-        ) : (
-          <div className={styles.profileAvatarFallback}>
-            <AccountCircleIcon sx={{ fontSize: 44, color: '#a490c2' }} />
+      <div className={styles.profileBannerMain}>
+        <div className={styles.bannerLeftSection}>
+          <button className={styles.backBtnWrapper} onClick={() => router.back()}>
+            <ArrowBackIcon sx={{ fontSize: '1.2rem' }} />
+          </button>
+
+          <div className={styles.profileBannerLeft}>
+            {user.photoURL ? (
+              <Image
+                src={user.photoURL}
+                alt={user.displayName ?? 'avatar'}
+                width={36}
+                height={36}
+                className={styles.profileAvatar}
+              />
+            ) : (
+              <div className={styles.profileAvatarFallback}>
+                <AccountCircleIcon sx={{ fontSize: 36, color: '#a490c2' }} />
+              </div>
+            )}
+            <div className={styles.profileInfo}>
+              <span className={styles.profileName}>{user.displayName ?? 'Explorer'}</span>
+              <span className={styles.profileEmail}>{user.email}</span>
+            </div>
           </div>
-        )}
-        <div className={styles.profileInfo}>
-          <span className={styles.profileName}>{user.displayName ?? 'Explorer'}</span>
-          <span className={styles.profileEmail}>{user.email}</span>
+        </div>
+
+        <div className={styles.profileBannerRight}>
+          <AnimatePresence mode="wait">
+            {!showSwitcher ? (
+              <div className={styles.controlsGroup}>
+                <motion.div
+                  key="badge"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  className={styles.currentSignBadge}
+                >
+                  <WbSunnyIcon sx={{ fontSize: '1rem', color: '#f59e0b' }} />
+                  <span>{activeChart?.sunSign || 'Unknown'} Sun</span>
+                  <span className={styles.signEmoji}>{currentSignData?.icon}</span>
+                </motion.div>
+
+                <motion.button
+                  key="switchBtn"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={styles.profileSwitchBtn}
+                  onClick={() => setShowSwitcher(true)}
+                >
+                  <PeopleIcon sx={{ fontSize: '1.1rem' }} />
+                  <span>Switch Profile</span>
+                </motion.button>
+              </div>
+            ) : (
+              <motion.div
+                key="switcher"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className={styles.horizontalSwitcher}
+              >
+                {charts.map((chart) => (
+                  <button
+                    key={chart.$id}
+                    className={`${styles.switcherItem} ${activeChart?.$id === chart.$id ? styles.switcherActive : ''}`}
+                    onClick={() => {
+                      setActiveChart(chart);
+                      setShowSwitcher(false);
+                    }}
+                  >
+                    <span>{chart.label}</span>
+                  </button>
+                ))}
+                <button className={styles.closeSwitcher} onClick={() => setShowSwitcher(false)}>
+                  <CloseIcon sx={{ fontSize: '1rem' }} />
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
-      {primarySunSign && (
-        <div className={styles.profileSignBadge}>
-          <WbSunnyIcon sx={{ fontSize: '1rem', color: primarySignData?.color || '#f59e0b' }} />
-          <span style={{ color: primarySignData?.color || '#f59e0b' }}>{primarySunSign} Sun</span>
-          <span className={styles.signIcon}>{primarySignData?.icon}</span>
-        </div>
-      )}
     </motion.div>
   );
 }
 
 export default function HoroscopePage() {
-  const { user, loading: authLoading } = useAuth();
   const dispatch = useAppDispatch();
+  const { user, loading: authLoading } = useAuth();
   const { charts, loading: chartsLoading } = useAppSelector((state) => state.charts);
-  const { data: persistentHoroscopeData, loading: fetchingHoroscope } = useAppSelector((state) => state.horoscope);
+  const { persistentHoroscopeData, horoscopeLoading } = useAppSelector((state) => ({
+    persistentHoroscopeData: state.horoscope?.data || {},
+    horoscopeLoading: state.horoscope?.loading || false
+  }));
+  const { activeChart } = useZodiac();
   const [selectedSign, setSelectedSign] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const scroll = (direction: 'left' | 'right') => {
-    if (scrollRef.current) {
-      const { scrollLeft } = scrollRef.current;
-      const scrollTo = direction === 'left' ? scrollLeft - 200 : scrollLeft + 200;
-      scrollRef.current.scrollTo({ left: scrollTo, behavior: 'smooth' });
-    }
-  };
-
   useEffect(() => {
     if (user) {
-      dispatch(fetchUserCharts(user.uid));
+      dispatch(fetchUserCharts());
     }
   }, [user, dispatch]);
 
   useEffect(() => {
-    if (charts.length > 0 && !selectedSign) {
-      const primaryChart = charts[0];
-      if (primaryChart.sunSign) {
-        setSelectedSign(primaryChart.sunSign);
-      }
+    if (activeChart?.sunSign) {
+      setSelectedSign(activeChart.sunSign);
     }
-  }, [charts, selectedSign]);
+  }, [activeChart]);
 
   useEffect(() => {
     if (selectedSign) {
@@ -115,8 +175,13 @@ export default function HoroscopePage() {
     }
   }, [selectedSign, persistentHoroscopeData, dispatch]);
 
-  const primarySunSign = charts.length > 0 ? (charts[0] as any).sunSign ?? null : null;
-  const primarySignData = signs.find(s => s.name.toLowerCase() === primarySunSign?.toLowerCase());
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const { scrollLeft, clientWidth } = scrollRef.current;
+      const scrollTo = direction === 'left' ? scrollLeft - clientWidth / 2 : scrollLeft + clientWidth / 2;
+      scrollRef.current.scrollTo({ left: scrollTo, behavior: 'smooth' });
+    }
+  };
 
   if (authLoading) return null;
 
@@ -126,23 +191,17 @@ export default function HoroscopePage() {
     s.sanskritName.toLowerCase() === selectedSign?.toLowerCase()
   );
 
-  // Determine if we should show structured sections or raw markdown
   const rawContent = horoscopeData?.response || horoscopeData?.horoscope || horoscopeData?.error;
 
-  // More robust extraction logic
   const extractFieldValue = (keywords: string[]) => {
     if (!rawContent) return null;
     for (const keyword of keywords) {
-      // Look for bolded headers containing the keyword
-      // Supports types like **Keyword:**, **Hindi (Keyword):**, **Keyword**
-      // Stops at the next bolded header **
       const regex = new RegExp(`\\*\\*[^\\*]*?${keyword}[^\\*]*?\\*\\*:?\\s*([\\s\\S]*?)(?=\\*\\*|$)`, 'i');
       const match = rawContent.match(regex);
       if (match?.[1]) {
         const cleaned = match[1].trim()
-          .replace(/^[:\s\*\|\)\(>\-0-9\.]+/, '') // Clear junk at start (including numbers like 1.)
-          .replace(/[\n\s]+$/, ''); // Clear junk at end
-
+          .replace(/^[:\s\*\|\)\(>\-0-9\.]+/, '')
+          .replace(/[\n\s]+$/, '');
         if (cleaned && cleaned.length > 3) return cleaned;
       }
     }
@@ -157,7 +216,6 @@ export default function HoroscopePage() {
   const lagna = horoscopeData?.lagna && !horoscopeData.lagna.includes('not specified') ? horoscopeData.lagna : null;
 
   const showStructured = !!(overall || career || love || health || luck);
-
   const dynamicRanges = getZodiacRangesTillToday();
   const currentDynamicRange = dynamicRanges.find(r => r.name.toLowerCase() === selectedSign?.toLowerCase())?.formatted;
   const todayInfo = getTodayHoroscopeDate();
@@ -167,16 +225,17 @@ export default function HoroscopePage() {
       <ThreeBackground />
       <div className={styles.gridOverlay} />
 
-      <Container maxWidth="lg" className={styles.container}>
+      <Container maxWidth="md" className={styles.container}>
+        <UserProfileBanner user={user} activeChart={activeChart} charts={charts} />
+
         <div className={styles.header}>
-          <UserProfileBanner user={user} primarySunSign={primarySunSign} primarySignData={primarySignData} />
           <motion.div
             className={styles.aiBadge}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
           >
-            <AutoAwesomeIcon fontSize="small" />
-            <span>Daily Insights</span>
+            <AutoAwesomeIcon fontSize="small" sx={{ mr: 1 }} />
+            <span>DAILY INSIGHTS</span>
           </motion.div>
           <h1>Daily Horoscope</h1>
           <p>Celestial insights for {todayInfo.full}</p>
@@ -194,18 +253,12 @@ export default function HoroscopePage() {
             <div className={styles.actions}>
               <Link href="/birthchart" className={styles.primaryBtn}>Create Birth Chart</Link>
             </div>
-
             <div className={styles.signPicker}>
               <h3>Browse All Signs</h3>
               <div className={styles.signGrid}>
                 {signs.map(s => (
-                  <button
-                    key={s.name}
-                    className={styles.signSmallBtn}
-                    onClick={() => setSelectedSign(s.name)}
-                  >
-                    {s.icon}
-                    <span>{s.name}</span>
+                  <button key={s.name} className={styles.signSmallBtn} onClick={() => setSelectedSign(s.name)}>
+                    {s.icon} <span>{s.name}</span>
                   </button>
                 ))}
               </div>
@@ -214,21 +267,21 @@ export default function HoroscopePage() {
         ) : (
           <div className={styles.horoscopeContent}>
             <div className={styles.selectorWrapper}>
-              <IconButton className={styles.scrollBtn} onClick={() => scroll('left')} size="small">
+              <IconButton className={styles.scrollBtn} onClick={() => scroll('left')} size="small" sx={{ color: '#fff' }}>
                 <ChevronLeftIcon />
               </IconButton>
               <div className={styles.signSelector} ref={scrollRef}>
                 {signs.map(s => (
                   <button
                     key={s.name}
-                    className={`${styles.signTab} ${selectedSign?.toLowerCase() === s.name.toLowerCase() || selectedSign?.toLowerCase() === s.sanskritName.toLowerCase() ? styles.active : ''}`}
+                    className={`${styles.signTab} ${selectedSign?.toLowerCase() === s.name.toLowerCase() ? styles.active : ''}`}
                     onClick={() => setSelectedSign(s.name)}
                   >
                     {s.name}
                   </button>
                 ))}
               </div>
-              <IconButton className={styles.scrollBtn} onClick={() => scroll('right')} size="small">
+              <IconButton className={styles.scrollBtn} onClick={() => scroll('right')} size="small" sx={{ color: '#fff' }}>
                 <ChevronRightIcon />
               </IconButton>
             </div>
@@ -236,8 +289,8 @@ export default function HoroscopePage() {
             <motion.div
               key={selectedSign}
               className={styles.horoscopeCard}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
               <div className={styles.cardHeader}>
@@ -249,55 +302,32 @@ export default function HoroscopePage() {
                     </div>
                   </div>
                 </div>
-                <div className={styles.signInfo}>
-                  <div className={styles.titleRow}>
-                    <h2>{(currentSignData as any)?.sanskritName || selectedSign}</h2>
-                    <span className={styles.kanyaBadge}>{currentSignData?.name}</span>
+
+                <div className={styles.headerInfo}>
+                  <div className={styles.signTitleRow}>
+                    <h1>{selectedSign}</h1>
+                    {currentSignData?.sanskritName && (
+                      <span className={styles.sanskritName}>{currentSignData.sanskritName}</span>
+                    )}
                   </div>
-                  <div className={styles.dateRow}>
-                    <AutoAwesomeIcon sx={{ fontSize: '0.9rem', color: '#a78bfa' }} />
-                    <span>{todayInfo.display}</span>
+                  <div className={styles.dateMeta}>
+                    <ExploreIcon />
+                    <span>{currentDynamicRange || currentSignData?.date} — {currentSignData?.symbol}</span>
                   </div>
                 </div>
               </div>
 
-              {fetchingHoroscope ? (
-                <div className={styles.skeletonContainer}>
-                  <div className={styles.lagnaSkeleton}>
-                    <Skeleton variant="rectangular" width="100%" height={60} sx={{ borderRadius: '12px', bgcolor: 'rgba(255,255,255,0.03)' }} />
-                  </div>
-                  <div className={styles.sectionSkeleton}>
-                    {[1, 2, 3, 4].map(i => (
-                      <div key={i} className={styles.skeletonItem}>
-                        <div className={styles.skeletonHeader}>
-                          <Skeleton variant="circular" width={40} height={40} sx={{ bgcolor: 'rgba(255,255,255,0.03)' }} />
-                          <Skeleton variant="text" width="60%" height={30} sx={{ bgcolor: 'rgba(255,255,255,0.03)' }} />
-                        </div>
-                        <Skeleton variant="text" width="90%" height={20} sx={{ mt: 1, bgcolor: 'rgba(255,255,255,0.03)' }} />
-                        <Skeleton variant="text" width="70%" height={20} sx={{ bgcolor: 'rgba(255,255,255,0.03)' }} />
-                      </div>
-                    ))}
-                  </div>
+              {horoscopeLoading ? (
+                <div className={styles.loader}>
+                  <Skeleton variant="text" width="100%" height={30} sx={{ bgcolor: 'rgba(255,255,255,0.05)' }} />
+                  <Skeleton variant="text" width="90%" height={30} sx={{ bgcolor: 'rgba(255,255,255,0.05)' }} />
+                  <Skeleton variant="text" width="95%" height={30} sx={{ bgcolor: 'rgba(255,255,255,0.05)' }} />
                 </div>
               ) : (
-                <div className={styles.reading}>
-                  <div className={styles.signNature}>
-                    <p className={styles.signDescription}>{(currentSignData as any)?.description}</p>
-                    <div className={styles.traits}>
-                      {(currentSignData as any)?.traits?.map((trait: string) => (
-                        <span key={trait} className={styles.traitBadge} style={{ borderColor: (currentSignData as any)?.color + '40', color: (currentSignData as any)?.color }}>
-                          {trait}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
+                <div className={styles.contentBody}>
                   {lagna && (
                     <div className={styles.lagnaBox}>
-                      <div className={styles.lagnaIcon}>
-                        <ExploreIcon sx={{ fontSize: '1.2rem' }} />
-                      </div>
-                      <div className={styles.lagnaInfo}>
+                      <div className={styles.lagnaItem}>
                         <label>Today's Lagna</label>
                         <p>{lagna}</p>
                       </div>
@@ -324,7 +354,6 @@ export default function HoroscopePage() {
                           </div>
                         </div>
                       )}
-
                       {career && (
                         <div className={styles.section}>
                           <div className={styles.sectionIcon} style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>
@@ -332,14 +361,12 @@ export default function HoroscopePage() {
                           </div>
                           <div className={styles.sectionContent}>
                             <h3>Career</h3>
-                            {horoscopeData?.career_quote && <p className={styles.quote}>"{horoscopeData.career_quote}"</p>}
                             <div className={styles.markdownDesc}>
                               <ReactMarkdown>{career}</ReactMarkdown>
                             </div>
                           </div>
                         </div>
                       )}
-
                       {love && (
                         <div className={styles.section}>
                           <div className={styles.sectionIcon} style={{ background: 'rgba(236, 72, 153, 0.1)', color: '#ec4899' }}>
@@ -347,37 +374,8 @@ export default function HoroscopePage() {
                           </div>
                           <div className={styles.sectionContent}>
                             <h3>Love</h3>
-                            {horoscopeData?.love_quote && <p className={styles.quote}>"{horoscopeData.love_quote}"</p>}
                             <div className={styles.markdownDesc}>
                               <ReactMarkdown>{love}</ReactMarkdown>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {health && (
-                        <div className={styles.section}>
-                          <div className={styles.sectionIcon} style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
-                            <AutoAwesomeIcon />
-                          </div>
-                          <div className={styles.sectionContent}>
-                            <h3>Health</h3>
-                            <div className={styles.markdownDesc}>
-                              <ReactMarkdown>{health}</ReactMarkdown>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {luck && (
-                        <div className={styles.section}>
-                          <div className={styles.sectionIcon} style={{ background: 'rgba(234, 179, 8, 0.1)', color: '#eab308' }}>
-                            <ExploreIcon />
-                          </div>
-                          <div className={styles.sectionContent}>
-                            <h3>Lucky Tip</h3>
-                            <div className={styles.markdownDesc}>
-                              <ReactMarkdown>{luck}</ReactMarkdown>
                             </div>
                           </div>
                         </div>

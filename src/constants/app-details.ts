@@ -1,5 +1,5 @@
 export const appDetails = {
-  name: 'AstroFlare',
+  name: 'Flare',
   version: '1.0.0',
   description: 'Premium astrological AI platform',
   author: 'Pavitar',

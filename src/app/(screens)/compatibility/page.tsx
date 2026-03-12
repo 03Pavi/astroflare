@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
@@ -15,6 +15,8 @@ import SyncIcon from '@mui/icons-material/Sync';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import styles from './page.module.scss';
+import { useZodiac } from '@/context/zodiac-context';
+import { Container } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useAppSelector } from '@/store/hooks';
 import { calculateAshtakoot, AshtakootResult } from '@/lib/ashtakoot';
@@ -58,9 +60,22 @@ export default function CompatibilityPage() {
   const router = useRouter();
   const { charts } = useAppSelector((state) => state.charts);
 
+  const { activeChart } = useZodiac();
   const [chartId1, setChartId1] = useState<string>('');
   const [chartId2, setChartId2] = useState<string>('');
   const [result, setResult] = useState<AshtakootResult | null>(null);
+
+  useState(() => {
+    if (activeChart?.$id) {
+      setChartId1(activeChart.$id);
+    }
+  });
+
+  useEffect(() => {
+    if (activeChart?.$id) {
+      setChartId1(activeChart.$id);
+    }
+  }, [activeChart]);
 
   const handleCalculate = () => {
     if (!chartId1 || !chartId2 || chartId1 === chartId2) return;
@@ -90,119 +105,121 @@ export default function CompatibilityPage() {
       <ThreeBackground />
       <div className={styles.gridOverlay} />
 
-      <ContainerWrapper>
-        <div className={styles.headerRow}>
-          <button className={styles.iconBtn} onClick={() => router.back()} title="Go Back">
-            <ArrowBackIcon fontSize="small" />
-          </button>
-          <div className={styles.mainIconWrapper}>
-            <FavoriteIcon sx={{ fontSize: 28, color: '#000' }} />
-          </div>
-          <button className={styles.iconBtn} title="Info">
-            <InfoOutlinedIcon fontSize="small" />
-          </button>
-        </div>
-
-        <h1 className={styles.title}>Synastry <span>Engine</span></h1>
-        <p className={styles.subtitle}>
-          Traditional Vedic Ashtakoot calculations for deep relationship insights and compatibility analysis.
-        </p>
-
-        {!result ? (
-          <>
-            <div className={styles.selectionLayout}>
-              <div className={styles.selectColumn}>
-                <label className={styles.labelYellow}>PARTNER 1 (NATIVE)</label>
-                <div className={styles.inputWrapper}>
-                  <select value={chartId1} onChange={e => setChartId1(e.target.value)}>
-                    <option value="">Select a chart...</option>
-                    {charts.map((c: any) => (
-                      <option key={c.$id} value={c.$id} disabled={c.$id === chartId2}>{c.label} ({c.birthDate})</option>
-                    ))}
-                  </select>
-                  <WbSunnyIcon className={styles.inputIcon} sx={{ color: '#64748b', fontSize: 18 }} />
-                </div>
-              </div>
-
-              <div className={styles.syncIconBlock}>
-                <SyncIcon sx={{ color: '#94a3b8', fontSize: 20 }} />
-              </div>
-
-              <div className={styles.selectColumn}>
-                <label className={styles.labelCyan}>PARTNER 2</label>
-                <div className={styles.inputWrapper}>
-                  <select value={chartId2} onChange={e => setChartId2(e.target.value)}>
-                    <option value="">Select a chart...</option>
-                    {charts.map((c: any) => (
-                      <option key={c.$id} value={c.$id} disabled={c.$id === chartId1}>{c.label} ({c.birthDate})</option>
-                    ))}
-                  </select>
-                  <NightsStayIcon className={styles.inputIcon} sx={{ color: '#64748b', fontSize: 18 }} />
-                </div>
-              </div>
-            </div>
-
-            <button
-              className={styles.calculateBtnSecondary}
-              disabled={!chartId1 || !chartId2 || chartId1 === chartId2}
-              onClick={handleCalculate}
-            >
-              Calculate Compatibility &gt;
+      <Container maxWidth="lg" className={styles.container}>
+        <ContainerWrapper>
+          <div className={styles.headerRow}>
+            <button className={styles.iconBtn} onClick={() => router.back()} title="Go Back">
+              <ArrowBackIcon fontSize="small" />
             </button>
-
-            <div className={styles.footerTags}>
-              <span className={styles.tagYellow}><StarBorderIcon sx={{ fontSize: 14 }} /> 36 GUNAS</span>
-              <span className={styles.tagCyan}><StarBorderIcon sx={{ fontSize: 14 }} /> DOSHA ANALYSIS</span>
+            <div className={styles.mainIconWrapper}>
+              <FavoriteIcon sx={{ fontSize: 28, color: '#000' }} />
             </div>
-          </>
-        ) : (
-          <motion.div
-            className={styles.resultsContainer}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-          >
-            <div className={styles.topResultHeader}>
-              <span className={styles.resultTypeLabel}>COMPATIBILITY ANALYSIS</span>
-              <div className={styles.bigScore}>
-                <span className={styles.scoreNumber}>{Math.round(result.total * 10) / 10}</span>
-                <span className={styles.scoreMax}>/36</span>
-              </div>
-              <div className={styles.matchBadge}>
-                <StarIcon sx={{ fontSize: 14 }} /> {getCompatibilityLevel(result.total).label.toUpperCase()}
-              </div>
-            </div>
+            <button className={styles.iconBtn} title="Info">
+              <InfoOutlinedIcon fontSize="small" />
+            </button>
+          </div>
 
-            <div className={styles.gunasGrid}>
-              {['varna', 'vashya', 'tara', 'yoni', 'grahaMaitri', 'gana', 'bhakoot', 'nadi'].map((key) => {
-                const guna = (result as any)[key];
-                const pct = guna.score / guna.max;
-                return (
-                  <div key={guna.name} className={styles.gunaCard}>
-                    <div className={styles.gunaTop}>
-                      <span className={styles.gunaName}>{guna.name.toUpperCase()}</span>
-                      <span className={styles.gunaScore}>
-                        {guna.score}/{guna.max}
-                      </span>
-                    </div>
-                    <div className={styles.gunaTrack}>
-                      <div className={styles.gunaFill} style={{ width: `${Math.max(5, pct * 100)}%` }} />
-                    </div>
+          <h1 className={styles.title}>Synastry <span>Engine</span></h1>
+          <p className={styles.subtitle}>
+            Traditional Vedic Ashtakoot calculations for deep relationship insights and compatibility analysis.
+          </p>
+
+          {!result ? (
+            <>
+              <div className={styles.selectionLayout}>
+                <div className={styles.selectColumn}>
+                  <label className={styles.labelYellow}>PARTNER 1 (NATIVE)</label>
+                  <div className={styles.inputWrapper}>
+                    <select value={chartId1} onChange={e => setChartId1(e.target.value)}>
+                      <option value="">Select a chart...</option>
+                      {charts.map((c: any) => (
+                        <option key={c.$id} value={c.$id} disabled={c.$id === chartId2}>{c.label} ({c.birthDate})</option>
+                      ))}
+                    </select>
+                    <WbSunnyIcon className={styles.inputIcon} sx={{ color: '#64748b', fontSize: 18 }} />
                   </div>
-                )
-              })}
-            </div>
+                </div>
 
-            <div className={styles.bottomActions}>
-              <button className={styles.newComparisonBtn} onClick={() => setResult(null)}>
-                New Comparison
+                <div className={styles.syncIconBlock}>
+                  <SyncIcon sx={{ color: '#94a3b8', fontSize: 20 }} />
+                </div>
+
+                <div className={styles.selectColumn}>
+                  <label className={styles.labelCyan}>PARTNER 2</label>
+                  <div className={styles.inputWrapper}>
+                    <select value={chartId2} onChange={e => setChartId2(e.target.value)}>
+                      <option value="">Select a chart...</option>
+                      {charts.map((c: any) => (
+                        <option key={c.$id} value={c.$id} disabled={c.$id === chartId1}>{c.label} ({c.birthDate})</option>
+                      ))}
+                    </select>
+                    <NightsStayIcon className={styles.inputIcon} sx={{ color: '#64748b', fontSize: 18 }} />
+                  </div>
+                </div>
+              </div>
+
+              <button
+                className={styles.calculateBtnSecondary}
+                disabled={!chartId1 || !chartId2 || chartId1 === chartId2}
+                onClick={handleCalculate}
+              >
+                Calculate Compatibility &gt;
               </button>
-              <button className={styles.shareBtn}>
-                <ShareIcon fontSize="small" />
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </ContainerWrapper>
+
+              <div className={styles.footerTags}>
+                <span className={styles.tagYellow}><StarBorderIcon sx={{ fontSize: 14 }} /> 36 GUNAS</span>
+                <span className={styles.tagCyan}><StarBorderIcon sx={{ fontSize: 14 }} /> DOSHA ANALYSIS</span>
+              </div>
+            </>
+          ) : (
+            <motion.div
+              className={styles.resultsContainer}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+            >
+              <div className={styles.topResultHeader}>
+                <span className={styles.resultTypeLabel}>COMPATIBILITY ANALYSIS</span>
+                <div className={styles.bigScore}>
+                  <span className={styles.scoreNumber}>{Math.round(result.total * 10) / 10}</span>
+                  <span className={styles.scoreMax}>/36</span>
+                </div>
+                <div className={styles.matchBadge}>
+                  <StarIcon sx={{ fontSize: 14 }} /> {getCompatibilityLevel(result.total).label.toUpperCase()}
+                </div>
+              </div>
+
+              <div className={styles.gunasGrid}>
+                {['varna', 'vashya', 'tara', 'yoni', 'grahaMaitri', 'gana', 'bhakoot', 'nadi'].map((key) => {
+                  const guna = (result as any)[key];
+                  const pct = guna.score / guna.max;
+                  return (
+                    <div key={guna.name} className={styles.gunaCard}>
+                      <div className={styles.gunaTop}>
+                        <span className={styles.gunaName}>{guna.name.toUpperCase()}</span>
+                        <span className={styles.gunaScore}>
+                          {guna.score}/{guna.max}
+                        </span>
+                      </div>
+                      <div className={styles.gunaTrack}>
+                        <div className={styles.gunaFill} style={{ width: `${Math.max(5, pct * 100)}%` }} />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              <div className={styles.bottomActions}>
+                <button className={styles.newComparisonBtn} onClick={() => setResult(null)}>
+                  New Comparison
+                </button>
+                <button className={styles.shareBtn}>
+                  <ShareIcon fontSize="small" />
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </ContainerWrapper>
+      </Container>
     </div>
   );
 }

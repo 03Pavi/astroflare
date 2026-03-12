@@ -24,7 +24,30 @@ const ASTRO_API_URL = '/api/birthchart';
 export const addChart = createAsyncThunk(
   'charts/addChart',
   async (
-    payload: { userId: string; label: string; dob: string; time: string; place: string; lat?: string; lon?: string },
+    payload: {
+      userId: string;
+      label: string;
+      dob: string;
+      time: string;
+      place: string;
+      lat?: string;
+      lon?: string;
+      astroPayload: {
+        year: number;
+        month: number;
+        date: number;
+        hours: number;
+        minutes: number;
+        seconds: number;
+        latitude: number;
+        longitude: number;
+        timezone?: number;
+        settings: {
+          observation_point: 'topocentric';
+          ayanamsha: 'lahiri';
+        };
+      };
+    },
     { rejectWithValue }
   ) => {
     try {
@@ -34,18 +57,16 @@ export const addChart = createAsyncThunk(
         headers: {
           'content-type': 'application/json',
         },
-        body: JSON.stringify({
-          dob: payload.dob, // YYYY-MM-DD
-          time: payload.time,
-          place: payload.place,
-          lat: payload.lat,
-          lon: payload.lon,
-        }),
+        body: JSON.stringify(payload.astroPayload),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch celestial details from API');
+        throw new Error(
+          errorData.error ||
+            errorData.message ||
+            'Failed to fetch celestial details from API'
+        );
       }
 
       const apiData = await response.json();
@@ -113,7 +134,31 @@ export const removeChart = createAsyncThunk(
 export const editChart = createAsyncThunk(
   'charts/editChart',
   async (
-    payload: { chartId: string; userId: string; label: string; dob: string; time: string; place: string; lat?: string; lon?: string },
+    payload: {
+      chartId: string;
+      userId: string;
+      label: string;
+      dob: string;
+      time: string;
+      place: string;
+      lat?: string;
+      lon?: string;
+      astroPayload: {
+        year: number;
+        month: number;
+        date: number;
+        hours: number;
+        minutes: number;
+        seconds: number;
+        latitude: number;
+        longitude: number;
+        timezone?: number;
+        settings: {
+          observation_point: 'topocentric';
+          ayanamsha: 'lahiri';
+        };
+      };
+    },
     { rejectWithValue }
   ) => {
     try {
@@ -123,18 +168,16 @@ export const editChart = createAsyncThunk(
         headers: {
           'content-type': 'application/json',
         },
-        body: JSON.stringify({
-          dob: payload.dob,
-          time: payload.time,
-          place: payload.place,
-          lat: payload.lat,
-          lon: payload.lon,
-        }),
+        body: JSON.stringify(payload.astroPayload),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch celestial details from API');
+        throw new Error(
+          errorData.error ||
+            errorData.message ||
+            'Failed to fetch celestial details from API'
+        );
       }
 
       const apiData = await response.json();

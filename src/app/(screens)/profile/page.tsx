@@ -15,6 +15,10 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import PublicIcon from '@mui/icons-material/Public';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import AutoStoriesIcon from '@mui/icons-material/AutoStories';
+import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
+import NumbersIcon from '@mui/icons-material/Numbers';
 
 const ThreeBackground = dynamic(() => import('@/components/home/three-background'), { ssr: false });
 
@@ -46,6 +50,34 @@ const features = [
     description: 'Get notified of upcoming planetary retrogrades.',
     href: '/alerts',
     color: '#a78bfa',
+  },
+  {
+    icon: <ChatBubbleOutlineIcon />,
+    title: 'AI Astrologer',
+    description: 'Chat with our cosmic AI for personalized guidance.',
+    href: '/chat',
+    color: '#8b5cf6',
+  },
+  {
+    icon: <AutoStoriesIcon />,
+    title: 'Zodiac Library',
+    description: 'Explore traits, myths, and secrets of the twelve signs.',
+    href: '/zodiac',
+    color: '#10b981',
+  },
+  {
+    icon: <WorkOutlineIcon />,
+    title: 'Career & Wealth',
+    description: 'Understand your vocational potential and financial abundance.',
+    href: '/career',
+    color: '#6366f1',
+  },
+  {
+    icon: <NumbersIcon />,
+    title: 'Numerology',
+    description: 'Decode the secret vibrations of your name and birth date.',
+    href: '/numerology',
+    color: '#f59e0b',
   },
 ];
 

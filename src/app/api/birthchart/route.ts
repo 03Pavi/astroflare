@@ -1,333 +1,326 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { Origin, Horoscope } from 'circular-natal-horoscope-js';
-import { find } from 'geo-tz';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
+import { NextRequest, NextResponse } from "next/server";
+import { find as findTimezones } from "geo-tz";
 
-dayjs.extend(utc);
-dayjs.extend(timezone);
-
-const PLANET_HINDI_MAP: Record<string, string> = {
-  "Sun": "सूर्य", "Moon": "चंद्र", "Mars": "मंगल", "Mercury": "बुध",
-  "Jupiter": "गुरु", "Venus": "शुक्र", "Saturn": "शनि",
-  "North Node": "राहु", "South Node": "केतु",
-  "Rahu": "राहु", "Ketu": "केतु"
+type IncomingBody = {
+  dob?: string;
+  time?: string;
+  place?: string;
+  lat?: string | number;
+  lon?: string | number;
+  year?: number;
+  month?: number;
+  date?: number;
+  hours?: number;
+  minutes?: number;
+  seconds?: number;
+  latitude?: number;
+  longitude?: number;
+  timezone?: number;
+  settings?: {
+    observation_point?: string;
+    ayanamsha?: string;
+  };
 };
 
-const SIGN_NAMES_MAP: Record<string, number> = {
-  "Aries": 1, "Taurus": 2, "Gemini": 3, "Cancer": 4, "Leo": 5, "Virgo": 6,
-  "Libra": 7, "Scorpio": 8, "Sagittarius": 9, "Capricorn": 10, "Aquarius": 11, "Pisces": 12
+type AstrologyApiPlanet = {
+  name?: string;
+  planet?: string;
+  full_degree?: number;
+  norm_degree?: number;
+  sign?: string;
+  house?: number;
+  retrograde?: string | boolean;
+  fullDegree?: number;
+  normDegree?: number;
+  house_number?: number;
+  isRetro?: string | boolean;
+  zodiac_sign_name?: string;
+  localized_name?: string;
+  current_sign?: number;
 };
 
-const NAKSHATRAS = [
-  "Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashira", "Ardra",
-  "Punarvasu", "Pushya", "Ashlesha", "Magha", "Purva Phalguni", "Uttara Phalguni",
-  "Hasta", "Chitra", "Swati", "Vishakha", "Anuradha", "Jyeshtha",
-  "Mula", "Purva Ashadha", "Uttara Ashadha", "Shravana", "Dhanishta", "Shatabhisha",
-  "Purva Bhadrapada", "Uttara Bhadrapada", "Revati"
+const SIGN_NAMES = [
+  "",
+  "Aries",
+  "Taurus",
+  "Gemini",
+  "Cancer",
+  "Leo",
+  "Virgo",
+  "Libra",
+  "Scorpio",
+  "Sagittarius",
+  "Capricorn",
+  "Aquarius",
+  "Pisces",
 ];
 
-function getNakshatra(longitude: number) {
-  const nakSize = 360 / 27;
-  const index = Math.floor(longitude / nakSize);
-  return NAKSHATRAS[index % 27];
+function normalizePlanet(
+  name: string,
+  planet: AstrologyApiPlanet | Record<string, unknown>
+) {
+  const source = planet as AstrologyApiPlanet;
+
+  return {
+    name: source.localized_name || source.planet || source.name || name,
+    degree:
+      source.normDegree ??
+      source.norm_degree ??
+      source.fullDegree ??
+      source.full_degree ??
+      0,
+    sign:
+      source.zodiac_sign_name ||
+      source.sign ||
+      SIGN_NAMES[source.current_sign ?? 0] ||
+      "",
+    house: source.house_number ?? source.house ?? 0,
+    retrograde:
+      source.isRetro === true ||
+      source.isRetro === "true" ||
+      source.retrograde === true ||
+      source.retrograde === "true",
+  };
 }
 
-function generateNorthIndianSVG(houses: any[]) {
-  const width = 600;
-  const height = 600;
-
-  // Define house centers and text areas
-  // 1st house is central top diamond, then CCW (standard North Indian)
-  const paths = [
-    "M0,0 L600,0 L600,600 L0,600 Z", // Border
-    "M0,0 L600,600", "M600,0 L0,600", // Diagonals
-    "M300,0 L0,300 L300,600 L600,300 Z" // Inner Diamond
-  ];
-
-  // House positioning for text (approximate centers of diamonds/triangles)
-  const houseConfig = [
-    { nr: 1, c: [300, 200] }, { nr: 2, c: [200, 100] }, { nr: 3, c: [100, 200] },
-    { nr: 4, c: [200, 300] }, { nr: 5, c: [100, 400] }, { nr: 6, c: [200, 500] },
-    { nr: 7, c: [300, 400] }, { nr: 8, c: [400, 500] }, { nr: 9, c: [500, 400] },
-    { nr: 10, c: [400, 300] }, { nr: 11, c: [500, 200] }, { nr: 12, c: [400, 100] }
-  ];
-
-  let svg = `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" style="cursor: pointer;">`;
-
-  // Background and styles
-  svg += `
-    <defs>
-      <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-        <feGaussianBlur stdDeviation="3" result="blur" />
-        <feComposite in="SourceGraphic" in2="blur" operator="over" />
-      </filter>
-      <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" style="stop-color:#0f172a;stop-opacity:1" />
-        <stop offset="100%" style="stop-color:#020617;stop-opacity:1" />
-      </linearGradient>
-      <style>
-        .house-cell:hover { fill: rgba(124, 58, 237, 0.1); }
-        .planet-text { transition: all 0.2s ease; }
-        .planet-text:hover { filter: brightness(1.5) drop-shadow(0 0 5px currentColor); font-size: 26px; }
-      </style>
-    </defs>
-    <rect width="100%" height="100%" fill="url(#bgGrad)" rx="32" />
-  `;
-
-  // Draw lines with glow
-  paths.forEach(p => {
-    svg += `<path d="${p}" stroke="rgba(124, 58, 237, 0.4)" stroke-width="2" fill="none" />`;
-    svg += `<path d="${p}" stroke="rgba(124, 58, 237, 0.8)" stroke-width="1" fill="none" filter="url(#glow)" />`;
-  });
-
-  // Central glow core
-  svg += `<circle cx="300" cy="300" r="20" fill="#7c3aed" opacity="0.3" filter="url(#glow)" />`;
-  svg += `<circle cx="300" cy="300" r="5" fill="#fff" filter="url(#glow)" />`;
-
-  // Add House Data
-  houses.forEach((h, idx) => {
-    const config = houseConfig[idx];
-    const signNr = SIGN_NAMES_MAP[h.sign] || (idx + 1);
-
-    svg += `<g class="house-group">`;
-    svg += `<title>House ${idx + 1}: ${h.sign}
-Planets: ${h.planets.map((p: any) => p.name).join(", ") || "No planets"}</title>`;
-
-    // Sign Number (Yellow as in image)
-    svg += `<text x="${config.c[0]}" y="${config.c[1] + 35}" font-family="Arial" font-size="22" font-weight="bold" fill="#facc15" text-anchor="middle" opacity="0.8">${signNr}</text>`;
-
-    // Planets
-    const count = h.planets.length;
-    h.planets.forEach((p: { name: string, isRetrograde: boolean, degree: string, sign: string }, pIdx: number) => {
-      const pName = p.name;
-      const hindi = PLANET_HINDI_MAP[pName] || pName;
-      const label = p.isRetrograde ? `${hindi}ᴿ` : hindi;
-
-      // Better vertical/horizontal distribution to avoid overlaps
-      let x = config.c[0];
-      let y = config.c[1];
-
-      if (count === 1) {
-        y -= 10;
-      } else if (count === 2) {
-        y += (pIdx === 0 ? -25 : 5);
-      } else if (count === 3) {
-        y += (pIdx === 0 ? -35 : (pIdx === 1 ? -5 : 25));
-      } else {
-        // Many planets case
-        const col = pIdx % 2;
-        const row = Math.floor(pIdx / 2);
-        x += (col === 0 ? -30 : 30);
-        y += (row * 25) - 40;
-      }
-
-      let color = "#fff";
-      if (pName === "Sun") color = "#facc15";
-      if (pName === "Moon") color = "#e2e8f0";
-      if (pName === "Mars") color = "#f87171";
-      if (pName === "Mercury") color = "#4ade80";
-      if (pName === "Jupiter") color = "#fbbf24";
-      if (pName === "Venus") color = "#f472b6";
-      if (pName === "Saturn") color = "#818cf8";
-      if (pName === "Rahu" || pName === "Ketu" || pName === "North Node" || pName === "South Node") color = "#94a3b8";
-
-      svg += `<text x="${x}" y="${y}" class="planet-text" font-family="'Noto Sans Devanagari', sans-serif" font-size="22" fill="${color}" text-anchor="middle" filter="url(#glow)">${label}
-        <title>${pName}: ${p.degree}° in ${p.sign}${p.isRetrograde ? ' (Retrograde)' : ''}</title>
-      </text>`;
-    });
-    svg += `</g>`;
-  });
-
-  svg += `</svg>`;
-  return svg;
+function parseNumber(value: string | number | undefined) {
+  const parsed = typeof value === "number" ? value : Number.parseFloat(value ?? "");
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
-const DASHA_LORDS = [
-  "Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu", "Jupiter", "Saturn", "Mercury"
-];
+function buildAstrologyPayload(body: IncomingBody) {
+  let year = body.year;
+  let month = body.month;
+  let day = body.date;
+  let hour = body.hours;
+  let minute = body.minutes;
+  const second = body.seconds ?? 0;
+  const lat = parseNumber(body.latitude ?? body.lat);
+  const lon = parseNumber(body.longitude ?? body.lon);
 
-const DASHA_YEARS: Record<string, number> = {
-  "Ketu": 7, "Venus": 20, "Sun": 6, "Moon": 10, "Mars": 7, "Rahu": 18, "Jupiter": 16, "Saturn": 19, "Mercury": 17
-};
+  if (
+    year === undefined ||
+    month === undefined ||
+    day === undefined ||
+    hour === undefined ||
+    minute === undefined
+  ) {
+    const { dob, time } = body;
+    if (!dob || !time) {
+      return null;
+    }
 
-const PLANET_KEYS = [
-  "sun", "moon", "mercury", "venus", "mars", "jupiter", "saturn", "uranus", "neptune", "pluto", "chiron", "lilith", "northnode", "southnode"
-];
+    const dobMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dob);
+    const timeMatch = /^(\d{2}):(\d{2})$/.exec(time);
 
-function getVimshottariDasha(moonLon: number, birthDate: Date) {
-  const nakSize = 360 / 27;
-  const nakIdx = Math.floor(moonLon / nakSize);
-  const startPlanetIdx = nakIdx % 9;
+    if (!dobMatch || !timeMatch) {
+      return null;
+    }
 
-  const dashaList = [];
-  let currentDate = dayjs(birthDate);
-
-  const posInNak = moonLon % nakSize;
-  const fractionRemaining = (nakSize - posInNak) / nakSize;
-  const firstPlanet = DASHA_LORDS[startPlanetIdx];
-  const firstPlanetYears = DASHA_YEARS[firstPlanet];
-
-  let remainingYears = firstPlanetYears * fractionRemaining;
-
-  for (let i = 0; i < 9; i++) {
-    const planetIdx = (startPlanetIdx + i) % 9;
-    const planet = DASHA_LORDS[planetIdx];
-    const years = i === 0 ? remainingYears : DASHA_YEARS[planet];
-
-    const endDate = currentDate.add(years, 'year');
-    dashaList.push({
-      planet: planet,
-      start: currentDate.toISOString(),
-      end: endDate.toISOString()
-    });
-    currentDate = endDate;
+    year = Number.parseInt(dobMatch[1], 10);
+    month = Number.parseInt(dobMatch[2], 10);
+    day = Number.parseInt(dobMatch[3], 10);
+    hour = Number.parseInt(timeMatch[1], 10);
+    minute = Number.parseInt(timeMatch[2], 10);
   }
 
-  return dashaList;
+  if (lat === null || lon === null) {
+    return null;
+  }
+
+  if (
+    !Number.isFinite(year) ||
+    !Number.isFinite(month) ||
+    !Number.isFinite(day) ||
+    !Number.isFinite(hour) ||
+    !Number.isFinite(minute) ||
+    day < 1 ||
+    day > 31 ||
+    month < 1 ||
+    month > 12 ||
+    hour < 0 ||
+    hour > 23 ||
+    minute < 0 ||
+    minute > 59 ||
+    second < 0 ||
+    second > 59 ||
+    lat < -90 ||
+    lat > 90 ||
+    lon < -180 ||
+    lon > 180
+  ) {
+    return null;
+  }
+
+  let tzone = body.timezone;
+
+  if (!Number.isFinite(tzone)) {
+    const timezones = findTimezones(lat, lon);
+    const timezoneName = timezones[0];
+
+    if (!timezoneName) {
+      return null;
+    }
+
+    const monthString = String(month).padStart(2, "0");
+    const dayString = String(day).padStart(2, "0");
+    const hourString = String(hour).padStart(2, "0");
+    const minuteString = String(minute).padStart(2, "0");
+    const secondString = String(second).padStart(2, "0");
+    const utcDate = new Date(
+      `${year}-${monthString}-${dayString}T${hourString}:${minuteString}:${secondString}Z`
+    );
+    const formatter = new Intl.DateTimeFormat("en-US", {
+      timeZone: timezoneName,
+      timeZoneName: "longOffset",
+    });
+    const tzPart = formatter
+      .formatToParts(utcDate)
+      .find((part) => part.type === "timeZoneName")?.value;
+
+    if (!tzPart) {
+      return null;
+    }
+
+    const offsetMatch = /GMT([+-]\d{1,2})(?::(\d{2}))?/.exec(tzPart);
+    if (!offsetMatch) {
+      return null;
+    }
+
+    const offsetHours = Number.parseInt(offsetMatch[1], 10);
+    const offsetMinutes = Number.parseInt(offsetMatch[2] ?? "0", 10);
+    tzone =
+      offsetHours + Math.sign(offsetHours || 1) * offsetMinutes / 60;
+  }
+
+  return {
+    date: day,
+    month,
+    year,
+    hours: hour,
+    minutes: minute,
+    seconds: second,
+    latitude: lat,
+    longitude: lon,
+    timezone: tzone,
+    settings: body.settings ?? {
+      observation_point: "topocentric",
+      ayanamsha: "lahiri",
+    },
+  };
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { dob, time, place, lat, lon } = body;
+    const body = (await req.json()) as IncomingBody;
+    const payload = buildAstrologyPayload(body);
 
-    if (!dob || (!place && !lat)) {
+    if (!payload) {
       return NextResponse.json(
-        { error: 'Date of birth and location are required' },
+        { success: false, message: "Invalid input parameters" },
         { status: 400 }
       );
     }
 
-    const latitude = parseFloat(lat);
-    const longitude = parseFloat(lon);
-
-    if (isNaN(latitude) || isNaN(longitude)) {
-      return NextResponse.json({ error: 'Precise coordinates (lat/lon) are required' }, { status: 400 });
+    const apiKey = process.env.FREE_ASTROLOGY_API_KEY;
+    if (!apiKey) {
+      return NextResponse.json(
+        { success: false, message: "API key not configured" },
+        { status: 500 }
+      );
     }
 
-    const tzs = find(latitude, longitude);
-    const tz = tzs.length > 0 ? tzs[0] : 'UTC';
-
-    const birthDate = dayjs.tz(`${dob} ${time}`, tz).toDate();
-
-    // 1. Create Origin for Western/Universal Calculation
-    const origin = new Origin({
-      year: birthDate.getFullYear(),
-      month: birthDate.getMonth(),
-      date: birthDate.getDate(),
-      hour: birthDate.getHours(),
-      minute: birthDate.getMinutes(),
-      latitude: latitude,
-      longitude: longitude
+    const response = await fetch("https://json.freeastrologyapi.com/planets", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+      },
+      body: JSON.stringify(payload),
     });
 
-    // 2. Compute Tropical (Western) Chart
-    const westernHoro = new Horoscope({
-      origin,
-      houseSystem: 'placidus',
-      zodiac: 'tropical',
-      aspectPoints: ['bodies', 'points', 'angles'],
-      aspectTypes: ['major']
-    });
+    if (!response.ok) {
+      return NextResponse.json(
+        { success: false, message: `External API error: ${response.statusText}` },
+        { status: response.status }
+      );
+    }
 
-    // 3. Compute Sidereal (Vedic) Chart
-    const vedicHoro = new Horoscope({
-      origin,
-      houseSystem: 'whole-sign',
-      zodiac: 'sidereal',
-      aspectPoints: ['bodies', 'points', 'angles'],
-      aspectTypes: ['major']
-    });
+    const rawData = await response.json();
+    const output = rawData.output || rawData.data || rawData.planets || rawData;
 
-    // 4. Group Planets by House Manually (to ensure accuracy)
-    const housePlanets: Record<number, any[]> = {};
-    const planets = PLANET_KEYS.map(key => {
-      const p = (vedicHoro.CelestialBodies as any)[key] || (vedicHoro.CelestialPoints as any)[key];
-      if (!p) return null;
+    let planets: ReturnType<typeof normalizePlanet>[] = [];
 
-      const absLon = p.ChartPosition?.Ecliptic?.DecimalDegrees || 0;
-      const planetData = {
-        name: p.label,
-        sign: p.Sign?.label || 'Unknown',
-        degree: (absLon % 30).toFixed(2),
-        nakshatra: getNakshatra(absLon),
-        house: p.House?.id || 'N/A',
-        isRetrograde: !!p.ChartPosition?.Ecliptic?.isRetrograde
-      };
+    if (Array.isArray(output)) {
+      const detailedEntry =
+        output.find((entry) => {
+          if (!entry || typeof entry !== "object") {
+            return false;
+          }
 
-      if (typeof planetData.house === 'number') {
-        if (!housePlanets[planetData.house]) housePlanets[planetData.house] = [];
-        housePlanets[planetData.house].push(planetData);
+          return Object.values(entry as Record<string, unknown>).some(
+            (value) =>
+              Boolean(value) &&
+              typeof value === "object" &&
+              "name" in (value as Record<string, unknown>)
+          );
+        }) ?? output[0];
+
+      if (detailedEntry && typeof detailedEntry === "object") {
+        planets = Object.entries(detailedEntry as Record<string, unknown>)
+          .filter(([, value]) => {
+            if (!value || typeof value !== "object") {
+              return false;
+            }
+
+            const record = value as Record<string, unknown>;
+            return typeof record.name === "string";
+          })
+          .map(([name, value]) =>
+            normalizePlanet(name, value as Record<string, unknown>)
+          );
       }
+    } else if (output && typeof output === "object") {
+      planets = Object.entries(output as Record<string, unknown>)
+        .filter(([, value]) => Boolean(value) && typeof value === "object")
+        .map(([name, value]) => normalizePlanet(name, value as Record<string, unknown>));
+    }
 
-      return planetData;
-    }).filter(Boolean);
+    if (planets.length === 0) {
+      return NextResponse.json(
+        { success: false, message: "Unexpected response format from astrology API" },
+        { status: 500 }
+      );
+    }
 
-    // 5. AstroChart data (Tropical by default as per user request example)
-    const astroData = {
-      sun: westernHoro.CelestialBodies.sun?.ChartPosition?.Ecliptic?.DecimalDegrees || 0,
-      moon: westernHoro.CelestialBodies.moon?.ChartPosition?.Ecliptic?.DecimalDegrees || 0,
-      mercury: westernHoro.CelestialBodies.mercury?.ChartPosition?.Ecliptic?.DecimalDegrees || 0,
-      venus: westernHoro.CelestialBodies.venus?.ChartPosition?.Ecliptic?.DecimalDegrees || 0,
-      mars: westernHoro.CelestialBodies.mars?.ChartPosition?.Ecliptic?.DecimalDegrees || 0,
-      jupiter: westernHoro.CelestialBodies.jupiter?.ChartPosition?.Ecliptic?.DecimalDegrees || 0,
-      saturn: westernHoro.CelestialBodies.saturn?.ChartPosition?.Ecliptic?.DecimalDegrees || 0,
-      uranus: westernHoro.CelestialBodies.uranus?.ChartPosition?.Ecliptic?.DecimalDegrees || 0,
-      neptune: westernHoro.CelestialBodies.neptune?.ChartPosition?.Ecliptic?.DecimalDegrees || 0,
-      pluto: westernHoro.CelestialBodies.pluto?.ChartPosition?.Ecliptic?.DecimalDegrees || 0,
-      chiron: westernHoro.CelestialBodies.chiron?.ChartPosition?.Ecliptic?.DecimalDegrees || 0,
-      lilith: westernHoro.CelestialBodies.lilith?.ChartPosition?.Ecliptic?.DecimalDegrees || 0,
-      nnode: westernHoro.CelestialPoints.northnode?.ChartPosition?.Ecliptic?.DecimalDegrees || 0,
-      houses: westernHoro.Houses.map((h: any) => h.ChartPosition?.StartPosition?.Ecliptic?.DecimalDegrees || 0),
-      ascendant: westernHoro.Ascendant?.ChartPosition?.Ecliptic?.DecimalDegrees || 0,
-      mc: westernHoro.Midheaven?.ChartPosition?.Ecliptic?.DecimalDegrees || 0
+    const ascendantRaw = planets.find(
+      (planet) => planet.name === "Ascendant"
+    );
+
+    const result = {
+      success: true,
+      ascendant: ascendantRaw?.sign || "",
+      rising_sign: ascendantRaw?.sign || "",
+      planets: planets
+        .filter((planet) => planet.name !== "Ascendant"),
     };
 
-    // 6. Format Aspects
-    const aspects = westernHoro.Aspects.all.map((a: any) => ({
-      body1: a.point1Label || 'Unknown',
-      body2: a.point2Label || 'Unknown',
-      type: a.label || 'Aspect',
-      orb: (a.orb || 0).toFixed(2)
-    }));
+    const sun = result.planets.find((planet) => planet.name === "Sun");
+    const moon = result.planets.find((planet) => planet.name === "Moon");
 
-    // 7. Vedic Extras (Dasha + SVG)
-    const siderealMoonLon = vedicHoro.CelestialBodies.moon?.ChartPosition?.Ecliptic?.DecimalDegrees || 0;
-    const dasha = getVimshottariDasha(siderealMoonLon, birthDate);
+    return NextResponse.json({
+      ...result,
+      sun_sign: sun?.sign || "",
+      moon_sign: moon?.sign || "",
+    });
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "Internal Server Error";
 
-    const vedicHouses = (vedicHoro.Houses as any[]).map((h: any, i: number) => ({
-      number: i + 1,
-      sign: h.Sign?.label || 'Unknown',
-      planets: housePlanets[i + 1] || []
-    }));
+    console.error("[birthchart] Request failed", error);
 
-    const chart_svg = generateNorthIndianSVG(vedicHouses);
-
-    const responseData = {
-      sun_sign: vedicHoro.CelestialBodies.sun?.Sign?.label || 'Unknown',
-      moon_sign: vedicHoro.CelestialBodies.moon?.Sign?.label || 'Unknown',
-      ascendant: vedicHoro.Ascendant?.Sign?.label || 'Unknown', // This is the Vedic Lagna
-      ascendant_degree: (vedicHoro.Ascendant?.ChartPosition?.Ecliptic?.DecimalDegrees % 30 || 0).toFixed(2),
-      day_of_week: dayjs(birthDate).format('dddd'),
-      western_sun: westernHoro.CelestialBodies.sun?.Sign?.label || 'Unknown',
-      western_moon: westernHoro.CelestialBodies.moon?.Sign?.label || 'Unknown',
-      western_asc: westernHoro.Ascendant?.Sign?.label || 'Unknown',
-      planets: planets,
-      aspects: aspects,
-      dasha: dasha,
-      chart_svg: chart_svg,
-      western_data: astroData,
-      houses: vedicHouses,
-      summary: `Detailed birth chart analysis for ${place}. Calculations harmonized for spiritual clarity.`
-    };
-
-    return NextResponse.json(responseData);
-  } catch (error: any) {
-    console.error('Birthchart API Error:', error);
     return NextResponse.json(
-      { error: 'Failed to calculate chart: ' + error.message },
+      { success: false, message },
       { status: 500 }
     );
   }

@@ -24,9 +24,11 @@
   pointer-events: none;
 }
 
-.content {
+.container {
   position: relative;
   z-index: 10;
+  max-width: 1300px;
+  margin: 0 auto;
 }
 
 .badge {

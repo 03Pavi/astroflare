@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
       `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1`,
       {
         headers: {
-          'User-Agent': 'AstroFlare/1.0', // Common practice to include a user agent for Nominatim
+          'User-Agent': 'Flare/1.0', // Common practice to include a user agent for Nominatim
         },
       }
     );

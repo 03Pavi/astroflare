@@ -73,10 +73,6 @@ export default function Header() {
               )}
               {user.displayName?.split(' ')[0] ?? 'Profile'}
             </Link>
-
-            <button className={styles.logoutBtn} onClick={handleLogout} title="Sign out">
-              <LogoutIcon fontSize="small" />
-            </button>
           </>
         ) : (
           <Link href={isLoginPage ? "/signup" : "/login"} className={styles.profileBtn}>

@@ -32,6 +32,8 @@ import NightsStayOutlinedIcon from '@mui/icons-material/NightsStayOutlined';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import EditIcon from '@mui/icons-material/Edit';
+import ProfileSelector from '@/components/shared/profile-selector';
+import { Container } from '@mui/material';
 
 const ThreeBackground = dynamic(() => import('@/components/home/three-background'), { ssr: false });
 
@@ -194,6 +196,27 @@ export default function BirthChartPage() {
     try {
       const dobFormatted = formData.birthDate.format('YYYY-MM-DD');
       const timeFormatted = formData.birthTime.format('HH:mm');
+      const latitude = Number.parseFloat(formData.lat);
+      const longitude = Number.parseFloat(formData.lon);
+
+      if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+        throw new Error('Select a valid birth place from the suggestions.');
+      }
+
+      const astroPayload = {
+        year: formData.birthDate.year(),
+        month: formData.birthDate.month() + 1,
+        date: formData.birthDate.date(),
+        hours: formData.birthTime.hour(),
+        minutes: formData.birthTime.minute(),
+        seconds: 0,
+        latitude,
+        longitude,
+        settings: {
+          observation_point: 'topocentric' as const,
+          ayanamsha: 'lahiri' as const,
+        },
+      };
 
       if (editingChartId) {
         await dispatch(editChart({
@@ -205,6 +228,7 @@ export default function BirthChartPage() {
           place: formData.birthPlace,
           lat: formData.lat,
           lon: formData.lon,
+          astroPayload,
         })).unwrap();
       } else {
         await dispatch(addChart({
@@ -215,6 +239,7 @@ export default function BirthChartPage() {
           place: formData.birthPlace,
           lat: formData.lat,
           lon: formData.lon,
+          astroPayload,
         })).unwrap();
       }
 
@@ -268,117 +293,118 @@ export default function BirthChartPage() {
   return (
     <div className={styles.page}>
       <ThreeBackground />
-
-      <div className={styles.container}>
-        <div className={styles.header}>
-          <div>
-            <h1>Birth Charts</h1>
-            <p>Manage your celestial maps and explore the cosmic blueprints of your personal journey.</p>
-          </div>
-          <button className={styles.createBtn} onClick={openCreateModal}>
-            <AddIcon fontSize="small" sx={{ color: '#fff' }} /> Create New Chart
-          </button>
-        </div>
-
-        {chartsLoading ? (
-          <div className={styles.chartsGrid}>
-            {[1, 2, 3].map((i) => (
-              <ChartSkeleton key={i} />
-            ))}
-          </div>
-        ) : charts.length > 0 ? (
-          <div className={styles.chartsGrid}>
-            {charts.map((chart: BirthChart) => (
-              <motion.div
-                key={chart.$id}
-                className={styles.chartCard}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <div className={styles.cardHeader}>
-                  <div className={styles.chartIcon}>
-                    <WbSunnyOutlinedIcon fontSize="small" sx={{ color: '#a78bfa' }} />
-                  </div>
-                  <div className={styles.headerInfo}>
-                    <h3>{chart.label}</h3>
-                    <span className={styles.sunSign}>{chart.sunSign ? `${chart.sunSign} SUN` : 'Sign Calculated'}</span>
-                  </div>
-                  <div className={styles.menuWrapper}>
-                    <button className={styles.moreBtn} onClick={() => setMenuOpenId(menuOpenId === chart.$id ? null : chart.$id)}>
-                      <MoreVertIcon fontSize="small" sx={{ color: '#64748b' }} />
-                    </button>
-                    <AnimatePresence>
-                      {menuOpenId === chart.$id && (
-                        <motion.div
-                          className={styles.dropdownMenu}
-                          initial={{ opacity: 0, scale: 0.9, y: -10 }}
-                          animate={{ opacity: 1, scale: 1, y: 0 }}
-                          exit={{ opacity: 0, scale: 0.9, y: -10 }}
-                        >
-                          <button onClick={() => openEditModal(chart)}>
-                            <EditIcon fontSize="inherit" /> Update
-                          </button>
-                          <button className={styles.deleteAction} onClick={() => handleDelete(chart.$id)}>
-                            <DeleteOutlineIcon fontSize="inherit" /> Delete Map
-                          </button>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </div>
-
-                <div className={styles.cardDetails}>
-                  <div className={styles.detailItem}>
-                    <CalendarTodayIcon sx={{ fontSize: '1.1rem', color: '#475569' }} /> {new Date(chart.birthDate).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
-                  </div>
-                  <div className={styles.detailItem}>
-                    <AccessTimeIcon sx={{ fontSize: '1.1rem', color: '#475569' }} /> {chart.birthTime || 'Not set'}
-                  </div>
-                  <div className={styles.detailItem}>
-                    <PlaceIcon sx={{ fontSize: '1.1rem', color: '#475569' }} /> {chart.birthPlace}
-                  </div>
-                </div>
-
-                <div className={styles.badgeRow}>
-                  <div className={styles.badge}>
-                    <NightsStayOutlinedIcon sx={{ fontSize: '1rem', color: '#94a3b8' }} /> {chart.moonSign || 'Taurus'}
-                  </div>
-                  <div className={styles.badge}>
-                    <ExploreIcon sx={{ fontSize: '1rem', color: '#94a3b8' }} /> {chart.risingSign || 'Virgo Rising'}
-                  </div>
-                </div>
-
-                <button
-                  className={styles.reportBtn}
-                  onClick={() => { setLoadingChartId(chart.$id); router.push(`/birthchart/${chart.$id}`); }}
-                  disabled={loadingChartId === chart.$id}
-                >
-                  {loadingChartId === chart.$id ? (
-                    <><CircularProgress size={14} sx={{ color: '#fff', mr: 1 }} /> Loading...</>
-                  ) : (
-                    <><AutoAwesomeIcon sx={{ fontSize: '1rem', mr: 1 }} /> View Full Report</>
-                  )}
-                </button>
-              </motion.div>
-            ))}
-          </div>
-        ) : (
-          <motion.div
-            className={styles.emptyCard}
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-          >
-            <div className={styles.emptyIconWrapper}>
-              <ExploreIcon sx={{ fontSize: '2.5rem', color: '#a78bfa' }} />
+      <Container maxWidth="xl" className={styles.containerShell}>
+        <div className={styles.content}>
+          <div className={styles.header}>
+            <div>
+              <h1>Birth Charts</h1>
+              <p>Manage your celestial maps and explore the cosmic blueprints of your personal journey.</p>
             </div>
-            <h2 className={styles.emptyTitle}>No Charts Found</h2>
-            <p className={styles.emptyDesc}>
-              Your journey through the stars hasn't begun yet. Create your first birth chart to reveal your celestial alignment.
-            </p>
-          </motion.div>
-        )}
-      </div>
+            <button className={styles.createBtn} onClick={openCreateModal}>
+              <AddIcon fontSize="small" sx={{ color: '#fff' }} /> Create New Chart
+            </button>
+          </div>
+
+          {chartsLoading ? (
+            <div className={styles.chartsGrid}>
+              {[1, 2, 3].map((i) => (
+                <ChartSkeleton key={i} />
+              ))}
+            </div>
+          ) : charts.length > 0 ? (
+            <div className={styles.chartsGrid}>
+              {charts.map((chart: BirthChart) => (
+                <motion.div
+                  key={chart.$id}
+                  className={styles.chartCard}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className={styles.cardHeader}>
+                    <div className={styles.chartIcon}>
+                      <WbSunnyOutlinedIcon fontSize="small" sx={{ color: '#a78bfa' }} />
+                    </div>
+                    <div className={styles.headerInfo}>
+                      <h3>{chart.label}</h3>
+                      <span className={styles.sunSign}>{chart.sunSign ? `${chart.sunSign} SUN` : 'Sign Calculated'}</span>
+                    </div>
+                    <div className={styles.menuWrapper}>
+                      <button className={styles.moreBtn} onClick={() => setMenuOpenId(menuOpenId === chart.$id ? null : chart.$id)}>
+                        <MoreVertIcon fontSize="small" sx={{ color: '#64748b' }} />
+                      </button>
+                      <AnimatePresence>
+                        {menuOpenId === chart.$id && (
+                          <motion.div
+                            className={styles.dropdownMenu}
+                            initial={{ opacity: 0, scale: 0.9, y: -10 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: -10 }}
+                          >
+                            <button onClick={() => openEditModal(chart)}>
+                              <EditIcon fontSize="inherit" /> Update
+                            </button>
+                            <button className={styles.deleteAction} onClick={() => handleDelete(chart.$id)}>
+                              <DeleteOutlineIcon fontSize="inherit" /> Delete Map
+                            </button>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </div>
+
+                  <div className={styles.cardDetails}>
+                    <div className={styles.detailItem}>
+                      <CalendarTodayIcon sx={{ fontSize: '1.1rem', color: '#475569' }} /> {new Date(chart.birthDate).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </div>
+                    <div className={styles.detailItem}>
+                      <AccessTimeIcon sx={{ fontSize: '1.1rem', color: '#475569' }} /> {chart.birthTime || 'Not set'}
+                    </div>
+                    <div className={styles.detailItem}>
+                      <PlaceIcon sx={{ fontSize: '1.1rem', color: '#475569' }} /> {chart.birthPlace}
+                    </div>
+                  </div>
+
+                  <div className={styles.badgeRow}>
+                    <div className={styles.badge}>
+                      <NightsStayOutlinedIcon sx={{ fontSize: '1rem', color: '#94a3b8' }} /> {chart.moonSign || 'Taurus'}
+                    </div>
+                    <div className={styles.badge}>
+                      <ExploreIcon sx={{ fontSize: '1rem', color: '#94a3b8' }} /> {chart.risingSign || 'Virgo Rising'}
+                    </div>
+                  </div>
+
+                  <button
+                    className={styles.reportBtn}
+                    onClick={() => { setLoadingChartId(chart.$id); router.push(`/birthchart/${chart.$id}`); }}
+                    disabled={loadingChartId === chart.$id}
+                  >
+                    {loadingChartId === chart.$id ? (
+                      <><CircularProgress size={14} sx={{ color: '#fff', mr: 1 }} /> Loading...</>
+                    ) : (
+                      <><AutoAwesomeIcon sx={{ fontSize: '1rem', mr: 1 }} /> View Full Report</>
+                    )}
+                  </button>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <motion.div
+              className={styles.emptyCard}
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+            >
+              <div className={styles.emptyIconWrapper}>
+                <ExploreIcon sx={{ fontSize: '2.5rem', color: '#a78bfa' }} />
+              </div>
+              <h2 className={styles.emptyTitle}>No Charts Found</h2>
+              <p className={styles.emptyDesc}>
+                Your journey through the stars hasn't begun yet. Create your first birth chart to reveal your celestial alignment.
+              </p>
+            </motion.div>
+          )}
+        </div>
+      </Container>
 
       <AnimatePresence>
         {isModalOpen && (

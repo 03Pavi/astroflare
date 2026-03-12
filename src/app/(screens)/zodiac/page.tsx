@@ -19,7 +19,7 @@ export default function ZodiacSignsPage() {
       <ThreeBackground />
       <div className={pageStyles.gridOverlay} />
 
-      <Container maxWidth="lg" className={pageStyles.content}>
+      <Container maxWidth="lg" className={pageStyles.container}>
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}

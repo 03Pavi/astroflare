@@ -1,0 +1,376 @@
+.page {
+  min-height: 100vh;
+  position: relative;
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 28%),
+    radial-gradient(circle at top right, rgba(99, 102, 241, 0.12), transparent 34%),
+    #020817;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+  background-size: 38px 38px;
+  opacity: 0.18;
+  pointer-events: none;
+}
+
+.container {
+  position: relative;
+  z-index: 1;
+  padding: 6.5rem 1rem 3rem;
+}
+
+.panel {
+  max-width: 1040px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.backLink,
+.primaryButton,
+.optionButton {
+  border: 0;
+  cursor: pointer;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 1.25rem;
+  padding: 0;
+  background: transparent;
+  color: #93c5fd;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.topRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(360px, 0.85fr);
+  gap: 1.5rem;
+  align-items: end;
+}
+
+.titleBlock h1,
+.heroCard h2,
+.primaryCard h3,
+.emptyState h2 {
+  margin: 0;
+  color: #f8fafc;
+}
+
+.titleBlock h1 {
+  font-size: clamp(2.25rem, 4vw, 3.15rem);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+}
+
+.subtext,
+.heroCard p,
+.primaryCard p,
+.primaryCard li,
+.emptyState p {
+  color: #9fb2d0;
+}
+
+.subtext {
+  max-width: 34rem;
+  margin: 0.85rem 0 0;
+  font-size: 1.02rem;
+  line-height: 1.6;
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.control {
+  display: grid;
+  gap: 0.45rem;
+
+  span {
+    color: #7ea2d8;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.68rem;
+    font-weight: 700;
+  }
+
+  select {
+    width: 100%;
+    min-height: 52px;
+    border-radius: 12px;
+    border: 1px solid rgba(96, 165, 250, 0.15);
+    background: rgba(15, 23, 42, 0.88);
+    color: #f8fafc;
+    padding: 0.95rem 1rem;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+}
+
+.content {
+  display: grid;
+  gap: 1.25rem;
+  margin-top: 1.75rem;
+}
+
+.heroCard,
+.primaryCard,
+.sideCard,
+.emptyState {
+  border-radius: 20px;
+  border: 1px solid rgba(96, 165, 250, 0.12);
+  box-shadow: 0 22px 80px rgba(2, 6, 23, 0.32);
+}
+
+.heroCard {
+  padding: 1.45rem 1.55rem;
+  background:
+    linear-gradient(90deg, rgba(30, 41, 59, 0.92), rgba(30, 64, 175, 0.18)),
+    rgba(15, 23, 42, 0.86);
+
+  h2 {
+    margin-top: 0.35rem;
+    font-size: 2rem;
+  }
+
+  p {
+    margin: 0.8rem 0 0;
+    max-width: 48rem;
+    line-height: 1.7;
+    font-size: 1.02rem;
+  }
+}
+
+.badge,
+.pathTag {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+}
+
+.badge {
+  padding: 0.28rem 0.75rem;
+  background: rgba(245, 158, 11, 0.14);
+  border: 1px solid rgba(245, 158, 11, 0.24);
+  color: #fbbf24;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.optionRail {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  width: fit-content;
+  max-width: 100%;
+  padding: 0.35rem;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.86);
+  border: 1px solid rgba(96, 165, 250, 0.12);
+}
+
+.optionButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 40px;
+  padding: 0.72rem 1rem;
+  border-radius: 10px;
+  background: transparent;
+  color: #8ea4c7;
+  font-size: 0.88rem;
+  white-space: nowrap;
+}
+
+.optionActive {
+  background: linear-gradient(180deg, #2f6df6, #215de0);
+  color: #f8fbff;
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.28);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.95fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.primaryCard,
+.sideCard {
+  background: rgba(10, 18, 38, 0.88);
+  padding: 1.45rem 1.35rem;
+}
+
+.primaryCard {
+  min-height: 308px;
+
+  h3 {
+    font-size: 1.8rem;
+    margin-bottom: 0.8rem;
+  }
+
+  p {
+    margin: 0;
+    line-height: 1.75;
+  }
+
+  ul {
+    margin: 1.3rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    position: relative;
+    padding-left: 1.8rem;
+    line-height: 1.65;
+  }
+
+  li::before {
+    content: '';
+    position: absolute;
+    left: 0.05rem;
+    top: 0.55rem;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #2f6df6;
+    box-shadow: 0 0 0 4px rgba(47, 109, 246, 0.14);
+  }
+
+  li + li {
+    margin-top: 1rem;
+  }
+}
+
+.sideCard {
+  min-height: 308px;
+}
+
+.sideHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #60a5fa;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.7rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+.pathList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.pathTag {
+  padding: 0.38rem 0.7rem;
+  background: rgba(30, 41, 59, 0.95);
+  border: 1px solid rgba(96, 165, 250, 0.16);
+  color: #c5d4ec;
+  font-size: 0.82rem;
+}
+
+.meta {
+  display: grid;
+  gap: 0.9rem;
+
+  span {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    color: #8ea4c7;
+    font-size: 0.95rem;
+  }
+
+  strong {
+    font-weight: 500;
+    color: #8ea4c7;
+  }
+
+  em {
+    font-style: normal;
+    font-weight: 700;
+  }
+
+  span:nth-child(1) em {
+    color: #fbbf24;
+  }
+
+  span:nth-child(2) em {
+    color: #8b5cf6;
+  }
+
+  span:nth-child(3) em {
+    color: #22d3ee;
+  }
+}
+
+.emptyState {
+  padding: 2rem;
+  text-align: center;
+  background: rgba(10, 18, 38, 0.88);
+}
+
+.primaryButton {
+  margin-top: 0.5rem;
+  padding: 0.9rem 1.2rem;
+  border-radius: 12px;
+  background: #f59e0b;
+  color: #111827;
+  font-weight: 800;
+}
+
+@media (max-width: 900px) {
+  .topRow {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .controls,
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .optionRail {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 5.5rem 0.75rem 2rem;
+  }
+
+  .heroCard,
+  .primaryCard,
+  .sideCard {
+    padding: 1.15rem;
+  }
+
+  .heroCard h2 {
+    font-size: 1.7rem;
+  }
+
+  .optionRail {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+}

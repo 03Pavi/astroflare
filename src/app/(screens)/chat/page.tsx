@@ -1,22 +1,27 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import dynamic from 'next/dynamic';
 import ReactMarkdown from 'react-markdown';
-import { useAuth } from '@/context/auth-context';
 import { useAppSelector } from '@/store/hooks';
 import SendIcon from '@mui/icons-material/Send';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import Image from 'next/image';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import StopIcon from '@mui/icons-material/Stop';
+import Link from 'next/link';
 import AddIcon from '@mui/icons-material/Add';
-import HistoryIcon from '@mui/icons-material/History';
-import CloseIcon from '@mui/icons-material/Close';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import CloseIcon from '@mui/icons-material/Close';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import HistoryIcon from '@mui/icons-material/History';
+import StopIcon from '@mui/icons-material/Stop';
 import styles from './page.module.scss';
+import { useZodiac } from '@/context/zodiac-context';
+import { useAuth } from '@/context/auth-context';
+import { Container } from '@mui/material';
 
 const ThreeBackground = dynamic(() => import('@/components/home/three-background'), { ssr: false });
 
@@ -59,8 +64,17 @@ function saveHistory(sessions: ChatSession[]) {
 }
 
 export default function ChatPage() {
+  return (
+    <Suspense fallback={null}>
+      <ChatContent />
+    </Suspense>
+  );
+}
+
+function ChatContent() {
   const { user } = useAuth();
   const { charts } = useAppSelector((state) => state.charts);
+  const { activeChart } = useZodiac();
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
@@ -73,10 +87,29 @@ export default function ChatPage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const hasMessages = messages.length > 0;
 
+  const searchParams = useSearchParams();
+  const topic = searchParams.get('topic');
+
   // Load history from localStorage on mount
   useEffect(() => {
     setChatHistory(loadHistory());
   }, []);
+
+  // Handle initial topic greeting
+  useEffect(() => {
+    if (topic && messages.length === 0 && !loading) {
+      let prompt = "";
+      if (topic === 'career') {
+        prompt = "I'm interested in learning about my career and wealth potential based on my birth chart. What can you tell me?";
+      } else if (topic === 'numerology') {
+        prompt = "Can you provide a numerology reading for me? I'd like to understand the vibrations of my name and birth date.";
+      }
+
+      if (prompt) {
+        handleSend(prompt);
+      }
+    }
+  }, [topic, charts]); // Run when charts are loaded or topic changes
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -125,7 +158,7 @@ export default function ChatPage() {
     setLoading(true);
 
     try {
-      const primaryChart = charts[0];
+      const primaryChart = activeChart || charts[0];
       const res = await fetch('/api/ask-question', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -196,7 +229,6 @@ export default function ChatPage() {
   return (
     <div className={styles.page}>
       <ThreeBackground />
-      {/* ── Permanent bg blur ── */}
       <div className={styles.bgBlur} />
 
       {/* ── Sidebar overlay blur ── */}

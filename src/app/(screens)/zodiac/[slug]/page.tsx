@@ -104,7 +104,7 @@ export default function SignDetailPage({ params }: { params: Promise<{ slug: str
       <ThreeBackground />
       <div className={styles.gridOverlay} />
 
-      <Container maxWidth="lg" className={styles.content}>
+      <Container maxWidth="lg" className={styles.container}>
         <Grid container spacing={8} alignItems="center">
           <Grid item xs={12} md={6}>
             <motion.div
