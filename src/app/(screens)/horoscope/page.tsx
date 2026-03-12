@@ -153,8 +153,8 @@ export default function HoroscopePage() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (user) {
-      dispatch(fetchUserCharts());
+    if (user && user.uid) {
+      dispatch(fetchUserCharts(user.uid));
     }
   }, [user, dispatch]);
 
