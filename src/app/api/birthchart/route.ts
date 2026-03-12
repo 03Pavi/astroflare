@@ -182,15 +182,16 @@ function buildAstrologyPayload(body: IncomingBody) {
       return null;
     }
 
-    const offsetMatch = /GMT([+-]\d{1,2})(?::(\d{2}))?/.exec(tzPart);
+    const offsetMatch = /GMT([+-]\d{1,2})?(?::(\d{2}))?/.exec(tzPart);
     if (!offsetMatch) {
       return null;
     }
 
-    const offsetHours = Number.parseInt(offsetMatch[1], 10);
+    const offsetHours = offsetMatch[1] ? Number.parseInt(offsetMatch[1], 10) : 0;
     const offsetMinutes = Number.parseInt(offsetMatch[2] ?? "0", 10);
+    const sign = offsetMatch[1] && offsetMatch[1].startsWith('-') ? -1 : 1;
     tzone =
-      offsetHours + Math.sign(offsetHours || 1) * offsetMinutes / 60;
+      (Math.abs(offsetHours) + (offsetMinutes / 60)) * sign;
   }
 
   return {
