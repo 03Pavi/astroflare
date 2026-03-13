@@ -274,7 +274,7 @@ const Bot = () => {
 				</svg>
 
 				{/* Hover Star Particles */}
-				{isPending && (
+				{(isPending || isHovered) && (
 					<Box sx={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
 						<Typography
 							sx={{

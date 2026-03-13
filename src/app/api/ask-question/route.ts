@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { QdrantClient } from "@qdrant/js-client-rest";
-import { pipeline } from "@xenova/transformers";
+
 
 export const runtime = "edge"; // ✅ required
 
@@ -85,27 +85,39 @@ export async function POST(req: NextRequest) {
     const chartPayload = parseChartData(chartData);
     const chartContext = formatChartSummary(chartPayload);
 
-    const retrievalInput = `Question: ${question}\nBirth chart:\n${chartContext}`;
-
     let context = "";
 
     try {
-      const embedder = await pipeline(
-        "feature-extraction",
-        "Xenova/all-MiniLM-L6-v2"
+      // ✅ fast embedding
+      const embeddingRes = await fetch(
+        `https://api.cloudflare.com/client/v4/accounts/${process.env.CF_ACCOUNT_ID}/ai/run/@cf/baai/bge-small-en-v1.5`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${process.env.CF_API_TOKEN}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ text: question }), // 🔥 ONLY question
+        }
       );
 
-      const emb = await embedder(retrievalInput, {
-        pooling: "mean",
-        normalize: true,
+      const embeddingData = await embeddingRes.json();
+      const vector = embeddingData.result.data[0];
+
+      const search = await client.search("books", {
+        vector,
+        limit: 4,
       });
 
-      const vector = Array.from(emb.data);
-
-      const search = await client.search("books", { vector, limit: 5 });
-
-      context = search.map((r) => r.payload?.text).filter(Boolean).join("\n\n");
-    } catch {
+      context = search
+        .map((r) => {
+          const text = r.payload?.text;
+          return typeof text === "string" ? text.slice(0, 700) : undefined;
+        })
+        .filter(Boolean)
+        .join("\n\n");
+    } catch (err) {
+      console.error(err);
       context = "";
     }
 
@@ -122,8 +134,7 @@ export async function POST(req: NextRequest) {
         chartData,
         context,
         stream: true,
-        system_prompt: `You are a Vedic astrology consultant. Do not answer any personal questions. Here is an example of a consultation:
-        Welcome to our Vedic astrology consultation.I'll be happy to help you understand the planetary positions and their implications for your birth chart.Sun: 28° 38' Aquarius, 4th houseMoon: 26° 57' Gemini, 8th houseRising Sign (Lagna): Scorpio, 1st houseMars: 11° 76' Sagittarius, 2nd houseJupiter: 14° 89' Cancer, 9th house (Retrograde)Venus: 19° 38' Capricorn, 3rd houseSaturn: 28° 60' Taurus, 7th houseRahu: 9° 34' Taurus, 7th house (Retrograde)Ketu: 9° 34' Scorpio, 1st house (Retrograde)Uranus: 6° 27' Aquarius, 4th houseNeptune: 18° 26' Capricorn, 3rd housePluto: 26° 04' Scorpio, 1st house* Sun in Aquarius: Suggests a humanitarian and independent nature, with a focus on innovation and progress.* Moon in Gemini: Indicates a curious and communicative nature, with a tendency to be restless and adaptable.* Jupiter in Cancer: Suggests a caring and protective nature, with a focus on family and emotional well-being.* Saturn in Taurus: Indicates a practical and responsible nature, with a focus on stability and security.* Rahu in Taurus: Suggests a tendency to be materialistic and ambitious, with a focus on wealth and status.* Ketu in Scorpio: Indicates a tendency to be intense and passionate, with a focus on transformation and rebirth.If you have specific questions or areas of interest, I'd be happy to provide more insights and guidance.`
+        system_prompt: `You are an expert Vedic astrology consultant. Your role is to provide insights based on provided birth chart data. Answer questions clearly and concisely, focusing only on astrological interpretation. Do not answer personal questions or questions outside the scope of Vedic astrology.`
       }),
     });
 
