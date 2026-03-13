@@ -9,4 +9,6 @@ coverage
 .env.*
 !.env.example
 
-  
+
+public/sw.js
+public/swe-worker*.js
