@@ -38,19 +38,35 @@ const SIGN_NAMES = [
 ];
 
 function extractMarkdown(text: string) {
-  const raw = (text || '').trim();
+  let raw = (text || '').trim();
   if (!raw) return '';
 
   try {
     const parsed = JSON.parse(raw);
-    if (typeof parsed?.response === 'string') return parsed.response;
-    if (typeof parsed?.answer === 'string') return parsed.answer;
-    if (typeof parsed?.text === 'string') return parsed.text;
+    if (typeof parsed?.response === 'string') {
+      raw = parsed.response;
+    } else if (typeof parsed?.answer === 'string') {
+      raw = parsed.answer;
+    } else if (typeof parsed?.text === 'string') {
+      raw = parsed.text;
+    }
   } catch {
     // not JSON
   }
 
-  return raw;
+  // Add line breaks for readability in the AI response.
+  let processedText = raw
+    .replace(/Suitable careers:/g, '\n\n- Suitable careers:')
+    .replace(/\.(\d+)\./g, '.\n\n$1. ')
+    .replace(/\.([A-Z][a-zA-Z]+):/g, '.\n\n- $1:');
+
+  // Remove leading newlines if the text starts with a list item
+  if (processedText.startsWith('\n\n-')) {
+    processedText = processedText.substring(4);
+    processedText = "- " + processedText;
+  }
+
+  return processedText;
 }
 
 export default function CareerPage() {
@@ -68,9 +84,6 @@ export default function CareerPage() {
   useEffect(() => {
     if (user?.uid) {
       dispatch(fetchUserCharts(user.uid));
-    }
-    return () => {
-      dispatch(resetCareerState());
     }
   }, [dispatch, user?.uid]);
 

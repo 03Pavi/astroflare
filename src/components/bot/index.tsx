@@ -1,190 +1,308 @@
-import React, { useEffect, useRef, useState, MouseEvent } from 'react';
+"use client";
 
-/**
- * TYPES & INTERFACES
- */
-interface DragPos {
-  x: number;
-  y: number;
-}
+import { useState, useEffect, useTransition } from "react";
+import { Box, Typography, keyframes } from "@mui/material";
+import { useRouter } from "next/navigation";
+import { useTypewriter } from "@/shared/hooks/use-type-writer";
 
-const App: React.FC = () => {
-  const [botMessage, setBotMessage] = useState<string>("");
-  const [currentGifIndex, setCurrentGifIndex] = useState<number>(0);
-  
-  // Drag and Drop State
-  const [isDragging, setIsDragging] = useState<boolean>(false);
-  const [isSleeping, setIsSleeping] = useState<boolean>(false);
-  const [dragPos, setDragPos] = useState<DragPos>({ x: 0, y: 0 });
-  const dragOffset = useRef<DragPos>({ x: 0, y: 0 });
+// animations
+const mysticalFloat = keyframes`
+  0%,100%{transform:translateY(0) rotate(0)}
+  50%{transform:translateY(-15px) rotate(2deg)}
+`;
 
-  // Astronaut Idle GIFs
-  const idleGifs: string[] = [
-    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZzlhNDJsa21ncTNhMXp5aHB6NGtjcjBvMWZzbzE3Z3RwZzdqYWptdCZlcD12MV9zdGlja2Vyc19zZWFyY2gmY3Q9cw/QB6TUin7YO9HFdvA1z/giphy.gif",
-    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZzlhNDJsa21ncTNhMXp5aHB6NGtjcjBvMWZzbzE3Z3RwZzdqYWptdCZlcD12MV9zdGlja2Vyc19zZWFyY2gmY3Q9cw/57ig8z1kaSdBEWz1QF/giphy.gif",
-    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZzlhNDJsa21ncTNhMXp5aHB6NGtjcjBvMWZzbzE3Z3RwZzdqYWptdCZlcD12MV9zdGlja2Vyc19zZWFyY2gmY3Q9cw/YaICTrHyZm4KUPP9iN/giphy.gif",
-    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZzlhNDJsa21ncTNhMXp5aHB6NGtjcjBvMWZzbzE3Z3RwZzdqYWptdCZlcD12MV9zdGlja2Vyc19zZWFyY2gmY3Q9cw/vIfU8hxWz7TsLsyGXN/giphy.gif",
-    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZzlhNDJsa21ncTNhMXp5aHB6NGtjcjBvMWZzbzE3Z3RwZzdqYWptdCZlcD12MV9zdGlja2Vyc19zZWFyY2gmY3Q9cw/PxA3QjMzW3R40lwUaG/giphy.gif",
-    "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExYTlieHR5dW85aTVzd2N0am4zaXl6eXIyYWtrejYyMHU4ZGZlMWM3MCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/MF8bULSzyzJgTm1QHx/giphy.gif",
-    "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3ZXFhYzN5d3kyOWwwejZ6aDd0MWdrZ2g5NG56d3U2bmYzM3h4cmdycyZlcD12MV9zdGlja2Vyc19zZWFyY2gmY3Q9cw/e1Yo8YxOr0ezH1hj6j/giphy.gif",
-    "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3bzV3dDJwNnZ1bXZkcGEyNmxiZDBsdjRjMG5xMHJkdms1cDRwMWF2MCZlcD12MV9zdGlja2Vyc19zZWFyY2gmY3Q9cw/HepPYK1va5F2b5S5qQ/giphy.gif"
-  ];
+const bookHover = keyframes`
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-5px)}
+`;
 
-  const holdingGif: string = "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZzlhNDJsa21ncTNhMXp5aHB6NGtjcjBvMWZzbzE3Z3RwZzdqYWptdCZlcD12MV9zdGlja2Vyc19zZWFyY2gmY3Q9cw/kYes5dD6EvhN0tRFtL/giphy.gif";
-  const yawningGif: string = "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3ZXFhYzN5d3kyOWwwejZ6aDd0MWdrZ2g5NG56d3U2bmYzM3h4cmdycyZlcD12MV9zdGlja2Vyc19zZWFyY2gmY3Q9cw/5Vyl1cz2OzVvox6RNw/giphy.gif";
+const pageFlip = keyframes`
+  0%,100%{transform:scaleX(1)}
+  50%{transform:scaleX(.8)}
+`;
 
-  // Cycle idle GIFs
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (!isDragging && !isSleeping) {
-        setCurrentGifIndex((prev) => (prev + 1) % idleGifs.length);
-      }
-    }, 4500); 
-    return () => clearInterval(interval);
-  }, [isDragging, isSleeping, idleGifs.length]);
+const sparkle = keyframes`
+  0%,100%{opacity:0;transform:scale(.5)}
+  50%{opacity:1;transform:scale(1.2)}
+`;
 
-  // Dragging interaction
-  useEffect(() => {
-    const onMouseMove = (e: globalThis.MouseEvent) => {
-      if (!isDragging) return;
-      setDragPos({
-        x: e.clientX - dragOffset.current.x,
-        y: e.clientY - dragOffset.current.y
-      });
-    };
+const Bot = () => {
+	const [isHovered, setIsHovered] = useState(false);
+	const [showGreeting, setShowGreeting] = useState(false);
+	const [isPending, startTransition] = useTransition();
+	const { push } = useRouter();
 
-    const onMouseUp = () => {
-      if (isDragging) {
-        setIsDragging(false);
-        setIsSleeping(true);
-        setBotMessage("ZZZ...");
-        setTimeout(() => {
-          setIsSleeping(false);
-          setBotMessage("");
-        }, 5000);
-      }
-    };
+	const isBubbleVisible = isHovered || showGreeting;
 
-    if (isDragging) {
-      window.addEventListener('mousemove', onMouseMove);
-      window.addEventListener('mouseup', onMouseUp);
-    }
-    return () => {
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseup', onMouseUp);
-    };
-  }, [isDragging]);
+	const text = useTypewriter("I 'm Oracle!", 30, isBubbleVisible);
 
-  const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    dragOffset.current = {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    };
-    setDragPos({ x: rect.left, y: rect.top });
-    setIsDragging(true);
-    setIsSleeping(false);
-  };
+	useEffect(() => {
+		const show = setTimeout(() => setShowGreeting(true), 1500);
+		const hide = setTimeout(() => setShowGreeting(false), 9000);
 
-  const getDynamicStyles = (): React.CSSProperties => {
-    if (isDragging) {
-      return {
-        left: `${dragPos.x}px`,
-        top: `${dragPos.y}px`,
-        cursor: 'grabbing',
-        transition: 'none'
-      };
-    }
+		return () => {
+			clearTimeout(show);
+			clearTimeout(hide);
+		};
+	}, []);
 
-    const time = Date.now() * 0.001;
-    const bobAmp = isSleeping ? 10 : 20;
-    
-    return {
-      right: `calc(3% + ${Math.sin(time * 0.4) * bobAmp}px)`,
-      bottom: `calc(40px + ${Math.cos(time * 0.3) * (bobAmp / 2)}px)`,
-      transform: `rotate(${Math.sin(time * 0.3) * 3}deg)`,
-      cursor: 'grab',
-      transition: 'all 0.6s ease-out'
-    };
-  };
+	const openChat = () => {
+		startTransition(() => push("/chat"));
+	};
 
-  const getAstronautGif = () => {
-    if (isDragging) return holdingGif;
-    if (isSleeping) return yawningGif;
-    return idleGifs[currentGifIndex];
-  };
+	return (
+		<Box
+			onMouseEnter={() => setIsHovered(true)}
+			onMouseLeave={() => setIsHovered(false)}
+			onClick={openChat}
+			sx={{
+				position: "fixed",
+				bottom: "2.5rem",
+				right: "2.5rem",
+				zIndex: 9999,
+				cursor: "pointer",
+				userSelect: "none",
+				display: "flex",
+				flexDirection: "column",
+				alignItems: "center",
+			}}
+		>
+			{/* Ink-Wash Parchment Message Bubble */}
+			<Box
+				sx={{
+					position: "absolute",
+					bottom: "125%",
+					bgcolor: "#fffbf2", // Cream parchment
+					color: "#2c3e50",
+					px: 3,
+					py: 1.5,
+					width: "max-content",
+					maxWidth: "160px",
+					borderRadius: "24px 24px 24px 4px",
+					boxShadow:
+						"0 12px 40px rgba(0,0,0,0.15), inset 0 0 20px rgba(184, 134, 11, 0.05)",
+					opacity: isBubbleVisible ? 1 : 0,
+					transform: `scale(${isBubbleVisible ? 1 : 0.8}) translateY(${isBubbleVisible ? 0 : 20}px)`,
+					transformOrigin: "bottom center",
+					transition: "all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+					border: "2px solid #d4af37", // Gold border
+					pointerEvents: "none",
+					"&::after": {
+						content: '""',
+						position: "absolute",
+						bottom: "-12px",
+						left: "0",
+						borderLeft: "12px solid #d4af37",
+						borderBottom: "12px solid transparent",
+					},
+				}}
+			>
+				<Typography
+					variant="body2"
+					sx={{
+						fontWeight: 600,
+						fontFamily: '"Georgia", serif',
+						fontSize: "0.9rem",
+						fontStyle: "italic",
+					}}
+				>
+					{text}
+				</Typography>
+			</Box>
 
-  return (
-    <div className="app-container">
-      <style>{`
-        .app-container {
-          position: fixed;
-          inset: 0;
-          pointer-events: none;
-          background: transparent;
-        }
+			{/* Oracle Visual Container */}
+			<Box
+				sx={{
+					position: "relative",
+					width: 100,
+					height: 100,
+					animation: `${mysticalFloat} 5s ease-in-out infinite`,
+					transition: "all 0.3s ease",
+				}}
+			>
+				{/* Midnight Blue Aura */}
+				<Box
+					sx={{
+						position: "absolute",
+						inset: -20,
+						background:
+							"radial-gradient(circle, rgba(44, 62, 80, 0.15) 0%, transparent 70%)",
+						borderRadius: "50%",
+						opacity: isHovered ? 1 : 0.5,
+						transition: "opacity 0.6s ease",
+					}}
+				/>
 
-        .astronaut-container {
-          position: fixed;
-          z-index: 9999;
-          user-select: none;
-          touch-action: none;
-          width: 220px;
-          height: 220px;
-          pointer-events: auto;
-          display: none; 
-        }
+				{/* Celestial Librarian SVG */}
+				<svg viewBox="0 0 100 100" width="100%" height="100%">
+					{/* Main Body - Midnight Robes */}
+					<path
+						d="M30 35 Q50 15 70 35 L80 85 Q50 95 20 85 Z"
+						fill="#1c2833"
+						stroke="#d4af37"
+						strokeWidth="1.5"
+					/>
 
-        @media (min-width: 768px) {
-          .astronaut-container {
-            display: block;
-          }
-        }
+					{/* Scholarly Collar */}
+					<path
+						d="M35 40 Q50 50 65 40"
+						fill="none"
+						stroke="#d4af37"
+						strokeWidth="2"
+						strokeLinecap="round"
+					/>
 
-        .astronaut-img {
-          width: 100%;
-          height: 100%;
-          object-fit: contain;
-          pointer-events: none;
-          filter: drop-shadow(0 0 20px rgba(0, 255, 255, 0.2));
-        }
+					{/* Librarian's Spectacles */}
+					<g>
+						<circle
+							cx="40"
+							cy="45"
+							r="5"
+							fill="none"
+							stroke="#d4af37"
+							strokeWidth="1"
+						/>
+						<circle
+							cx="60"
+							cy="45"
+							r="5"
+							fill="none"
+							stroke="#d4af37"
+							strokeWidth="1"
+						/>
+						<line
+							x1="45"
+							y1="45"
+							x2="55"
+							y2="45"
+							stroke="#d4af37"
+							strokeWidth="1"
+						/>
 
-        .message-bubble {
-          position: absolute;
-          top: -1.5rem;
-          right: 20%;
-          background: rgba(0, 0, 0, 0.8);
-          color: cyan;
-          padding: 0.4rem 1rem;
-          border-radius: 10px 10px 0 10px;
-          font-size: 10px;
-          font-family: monospace;
-          letter-spacing: 0.1em;
-          white-space: nowrap;
-          pointer-events: none;
-        }
-      `}</style>
+						{/* Soft Glowing Eyes behind lenses */}
+						<circle cx="40" cy="45" r="2" fill="#fff" opacity="0.6">
+							<animate
+								attributeName="opacity"
+								values="0.6;0.2;0.6"
+								dur="3s"
+								repeatCount="indefinite"
+							/>
+						</circle>
+						<circle cx="60" cy="45" r="2" fill="#fff" opacity="0.6">
+							<animate
+								attributeName="opacity"
+								values="0.6;0.2;0.6"
+								dur="3s"
+								repeatCount="indefinite"
+							/>
+						</circle>
+					</g>
 
-      <div 
-        className={`astronaut-container ${isSleeping ? 'is-sleeping' : ''}`}
-        onMouseDown={handleMouseDown}
-        style={getDynamicStyles()}
-      >
-        <img 
-          src={getAstronautGif()} 
-          alt="Bot" 
-          className="astronaut-img"
-          draggable="false"
-        />
-        
-        {botMessage && (
-          <div className="message-bubble">
-            {botMessage}
-          </div>
-        )}
-      </div>
-    </div>
-  );
+					{/* Floating Scholarly Tome */}
+					<g style={{ animation: `${bookHover} 3s ease-in-out infinite` }}>
+						<rect
+							x="65"
+							y="55"
+							width="25"
+							height="18"
+							rx="2"
+							fill="#7b241c"
+							stroke="#d4af37"
+							strokeWidth="1"
+						/>
+						<line
+							x1="77.5"
+							y1="55"
+							x2="77.5"
+							y2="73"
+							stroke="#d4af37"
+							strokeWidth="0.5"
+						/>
+						{/* "Pages" flipping animation */}
+						<g style={{ animation: `${pageFlip} 2s ease-in-out infinite` }}>
+							<rect
+								x="68"
+								y="58"
+								width="8"
+								height="12"
+								fill="#fdf5e6"
+								opacity="0.8"
+							/>
+							<rect
+								x="79"
+								y="58"
+								width="8"
+								height="12"
+								fill="#fdf5e6"
+								opacity="0.8"
+							/>
+						</g>
+					</g>
+
+					{/* Quill Pen Detail */}
+					<path
+						d="M25 55 L15 75"
+						stroke="#fff"
+						strokeWidth="1.5"
+						strokeLinecap="round"
+						opacity="0.7"
+					/>
+					<path
+						d="M15 75 Q18 78 22 75"
+						fill="none"
+						stroke="#fff"
+						strokeWidth="1"
+					/>
+
+					{/* Celestial Dust / Sparkles */}
+					<circle cx="30" cy="25" r="1" fill="#fff">
+						<animate
+							attributeName="opacity"
+							values="0;1;0"
+							dur="2s"
+							repeatCount="indefinite"
+						/>
+					</circle>
+					<circle cx="75" cy="20" r="1.5" fill="#d4af37">
+						<animate
+							attributeName="opacity"
+							values="0;1;0"
+							dur="2.5s"
+							repeatCount="indefinite"
+						/>
+					</circle>
+				</svg>
+
+				{/* Hover Star Particles */}
+				{isPending && (
+					<Box sx={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+						<Typography
+							sx={{
+								position: "absolute",
+								top: 0,
+								left: "20%",
+								fontSize: "10px",
+								animation: `${sparkle} 1.5s infinite`,
+							}}
+						>
+							✨
+						</Typography>
+						<Typography
+							sx={{
+								position: "absolute",
+								top: 30,
+								right: -5,
+								fontSize: "12px",
+								animation: `${sparkle} 2s infinite`,
+							}}
+						>
+							🌟
+						</Typography>
+					</Box>
+				)}
+			</Box>
+		</Box>
+	);
 };
 
-export default App;
+export default Bot;
