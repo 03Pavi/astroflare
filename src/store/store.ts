@@ -5,6 +5,7 @@ import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import userReducer from "./slices/user-slice";
 import chartsReducer from "./slices/charts-slice";
 import horoscopeReducer from "./slices/horoscope-slice";
+import careerReducer from "./slices/career-slice";
 
 const createNoopStorage = () => {
   return {
@@ -30,11 +31,19 @@ const persistConfig = {
   storage,
 };
 
-const rootReducer = combineReducers({
+const appReducer = combineReducers({
   user: userReducer,
   charts: chartsReducer,
   horoscope: horoscopeReducer,
+  career: careerReducer,
 });
+
+const rootReducer = (state: any, action: any) => {
+  if (action.type === 'app/logout') {
+    state = undefined;
+  }
+  return appReducer(state, action);
+}
 
 const persistedReducer: any = persistReducer(persistConfig, rootReducer);
 

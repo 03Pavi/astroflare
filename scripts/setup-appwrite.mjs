@@ -16,10 +16,10 @@ import { dirname, resolve } from 'path';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: resolve(__dirname, '../.env.local') });
 
-const ENDPOINT = process.env.NEXT_PUBLIC_APPWRITE_URL;
-const PROJECT_ID = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID;
-const API_KEY = process.env.NEXT_PUBLIC_APPWRITE_API_KEY;
-const DB_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID ?? 'astroai_db';
+const ENDPOINT = process.env.APPWRITE_URL ?? process.env.NEXT_PUBLIC_APPWRITE_URL;
+const PROJECT_ID = process.env.APPWRITE_PROJECT_ID ?? process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID;
+const API_KEY = process.env.APPWRITE_API_KEY ?? process.env.NEXT_PUBLIC_APPWRITE_API_KEY;
+const DB_ID = process.env.APPWRITE_DATABASE_ID ?? process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID ?? 'astroai_db';
 
 if (!ENDPOINT || !PROJECT_ID || !API_KEY) {
   console.error('❌  Missing env vars. Check .env.local');
@@ -170,6 +170,9 @@ async function createBirthChartsCollection() {
 
   console.log('\n🎉  Setup complete!');
   console.log('   Update .env.local with the IDs below if you used different names:');
+  console.log(`   APPWRITE_DATABASE_ID=${DB_ID}`);
+  console.log(`   APPWRITE_USERS_COLLECTION_ID=user_details`);
+  console.log(`   APPWRITE_CHARTS_COLLECTION_ID=birth_charts`);
   console.log(`   NEXT_PUBLIC_APPWRITE_DATABASE_ID=${DB_ID}`);
   console.log(`   NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID=user_details`);
   console.log(`   NEXT_PUBLIC_APPWRITE_CHARTS_COLLECTION_ID=birth_charts`);

@@ -1,286 +1,285 @@
 .page {
   position: relative;
   min-height: 100vh;
-  padding: 6rem 2rem 4rem;
-  background: #0B111D;
+  padding: 6rem 2rem 3rem;
+  background: radial-gradient(circle at 18% 0%, #0f223f 0%, #08142b 45%, #050d20 100%);
   color: #fff;
   font-family: 'Inter', sans-serif;
   overflow-x: hidden;
+}
 
-  @media (max-width: 768px) {
-    padding: 5rem 1rem 2rem;
-  }
+.loadingPage,
+.errorPage {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: #081125;
+  color: #f8fafc;
 }
 
 .gridOverlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: radial-gradient(rgba(56, 189, 248, 0.05) 1px, transparent 1px);
-  background-size: 50px 50px;
-  z-index: 0;
+  inset: 0;
+  background-image: linear-gradient(rgba(56, 189, 248, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.08) 1px, transparent 1px);
+  background-size: 78px 78px;
+  opacity: 0.2;
   pointer-events: none;
 }
 
 .container {
   position: relative;
-  z-index: 10;
-  max-width: 1400px !important;
+  z-index: 3;
+  max-width: 1320px !important;
 }
 
-/* UNIVERSAL CARD */
-.dashboardCard {
-  background: #111827;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  padding: 1.5rem 1.75rem;
-
-  @media (max-width: 640px) {
-    padding: 1.25rem;
-  }
-}
-
-.cardHeader {
+.engineHeaderPro {
+  background: linear-gradient(120deg, rgba(11, 26, 52, 0.96), rgba(12, 26, 55, 0.82));
+  border: 1px solid rgba(122, 160, 210, 0.16);
+  border-radius: 18px;
+  padding: 1.8rem 2rem;
+  margin-bottom: 1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  gap: 1rem;
+  box-shadow: 0 22px 48px rgba(1, 6, 18, 0.5);
+
+  .labelRow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-bottom: 0.65rem;
+  }
+
+  .label {
+    font-size: 0.72rem;
+    letter-spacing: 0.24em;
+    color: #06b6d4;
+    font-weight: 800;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(2rem, 4.5vw, 3.2rem);
+    font-weight: 700;
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+
+    span {
+      color: #f59e0b;
+    }
+  }
+}
+
+.metaRow {
+  margin-top: 0.7rem;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+
+.metaBadge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #a7c7e8;
+  background: rgba(42, 71, 108, 0.62);
+  border: 1px solid rgba(128, 167, 216, 0.28);
+  border-radius: 999px;
+  padding: 0.28rem 0.72rem;
+}
+
+.metaDivider {
+  width: 1px;
+  height: 14px;
+  background: rgba(148, 163, 184, 0.4);
+}
+
+.metaText {
+  font-size: 0.74rem;
+  letter-spacing: 0.16em;
+  color: #9caec7;
+  font-weight: 700;
+}
+
+.actions {
+  display: flex;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+
+.btnOutline,
+.btnPrimary {
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.92rem;
+  padding: 0.78rem 1.28rem;
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.btnOutline {
+  background: rgba(36, 55, 86, 0.75);
+  border-color: rgba(126, 154, 201, 0.3);
+  color: #e5edf8;
+}
+
+.btnPrimary {
+  background: linear-gradient(90deg, #f6ad0f, #f59e0b);
+  color: #0b1120;
+  box-shadow: 0 12px 25px rgba(245, 158, 11, 0.28);
+}
+
+.reportBody {
+  padding-bottom: 2rem;
+}
+
+.chartPanel {
+  background: rgba(29, 45, 73, 0.68);
+  border: 1px solid rgba(137, 165, 203, 0.22);
+  border-radius: 16px;
+  padding: 1.1rem;
+  box-shadow: 0 18px 36px rgba(3, 8, 19, 0.48);
+}
+
+.panelTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 0.9rem;
 
   h2 {
-    font-size: 0.8rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    color: #94a3b8;
-    letter-spacing: 0.15em;
     margin: 0;
-  }
-
-  .dots {
-    display: flex;
-    gap: 4px;
-
-    &::before,
-    &::after {
-      content: '';
-      width: 6px;
-      height: 6px;
-      background: #06b6d4;
-      border-radius: 50%;
-    }
-  }
-}
-
-.badgeOrange {
-  font-size: 0.65rem;
-  font-weight: 800;
-  color: #F59E0B;
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  padding: 0.3rem 0.6rem;
-  border-radius: 99px;
-  text-transform: uppercase;
-}
-
-.badgeCyan {
-  font-size: 0.65rem;
-  font-weight: 800;
-  color: #06b6d4;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-/* TOP ENGINE HEADER PRO */
-.engineHeaderPro {
-  background: #111827;
-  border-radius: 16px;
-  padding: 2rem 3rem;
-  margin-bottom: 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  position: relative;
-  overflow: hidden;
-
-  /* Accent Gradient left border */
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 6px;
-    height: 100%;
-    background: linear-gradient(to bottom, #F59E0B, #06b6d4, #10b981);
-    border-radius: 16px 0 0 16px;
-  }
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    padding: 1.5rem;
-    gap: 1.5rem;
-    align-items: flex-start;
-  }
-
-  .headerContent {
-    .labelRow {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 0.5rem;
-
-      .label {
-        font-size: 0.75rem;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 0.25em;
-        color: #06b6d4;
-      }
-    }
-
-    h1 {
-      font-size: clamp(2rem, 5vw, 2.75rem);
-      font-weight: 700;
-      margin: 0;
-      color: #fff;
-      letter-spacing: -0.01em;
-    }
-
-    .subText {
-      margin-top: 0.5rem;
-      color: #94a3b8;
-      font-size: clamp(0.9rem, 2vw, 1rem);
-
-      span {
-        color: #e2e8f0;
-      }
-    }
-  }
-
-  .actions {
-    display: flex;
-    gap: 1rem;
-
-    @media (max-width: 640px) {
-      flex-direction: column;
-      width: 100%;
-    }
-  }
-
-  .btnOutline {
-    background: transparent;
-    color: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.05);
-    }
-  }
-
-  .btnPrimary {
-    background: linear-gradient(to right, #F59E0B, #d97706);
-    color: #000;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
+    font-size: 1.85rem;
     font-weight: 700;
-    font-size: 0.95rem;
-    cursor: pointer;
-    border: none;
-    transition: all 0.2s;
-    white-space: nowrap;
-    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
-
-    &:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.5);
-    }
+    color: #e7eef8;
   }
 }
 
-/* CHART CONTAINER */
+.chartTabs {
+  display: inline-flex;
+  gap: 0.3rem;
+  background: rgba(8, 19, 38, 0.82);
+  padding: 0.25rem;
+  border-radius: 10px;
+  border: 1px solid rgba(126, 154, 201, 0.24);
+}
+
+.tabBtn {
+  border: 0;
+  background: transparent;
+  color: #8ea4c2;
+  font-weight: 700;
+  font-size: 0.72rem;
+  padding: 0.32rem 0.62rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.tabActive {
+  background: #f59e0b;
+  color: #0f1628;
+}
+
+.chartFrame {
+  background: linear-gradient(180deg, rgba(35, 53, 84, 0.9), rgba(22, 36, 62, 0.82));
+  border: 1px solid rgba(131, 165, 209, 0.24);
+  border-radius: 14px;
+  padding: 0.8rem;
+}
+
 .svgWrapper {
   display: flex;
   justify-content: center;
   align-items: center;
-
-  svg {
-    max-width: 100%;
-    height: auto;
-  }
 }
 
-/* CORE STATISTICS */
-.statsList {
+.rightCol {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  flex: 1;
-}
-
-.statRow {
-  display: flex;
-  align-items: center;
   gap: 1rem;
 }
 
-.statIcon {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  display: flex;
+.statsTiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.statTile {
+  background: rgba(33, 47, 74, 0.82);
+  border: 1px solid rgba(135, 163, 202, 0.2);
+  border-radius: 14px;
+  padding: 1rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.tileIcon {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  font-size: 1rem;
   font-weight: 700;
-  font-size: 1.1rem;
+  color: #f8b319;
+  background: rgba(245, 158, 11, 0.16);
 }
 
-.statText {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-
-  .statLabel {
-    font-size: 0.65rem;
-    text-transform: uppercase;
-    color: #64748b;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-  }
-
-  .statValue {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #fff;
-
-    .deg {
-      color: #F59E0B;
-      font-size: 0.9em;
-      margin-left: 0.25rem;
-    }
-  }
+.tileLabel {
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: #8fa7c4;
+  letter-spacing: 0.14em;
 }
 
-.statsFooter {
-  margin-top: 2rem;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+.tileValue {
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: #f3f8ff;
+  line-height: 1.2;
+}
+
+.tableCard {
+  background: rgba(30, 44, 71, 0.84);
+  border: 1px solid rgba(135, 163, 202, 0.2);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.tableHeader {
+  padding: 1rem 1.2rem;
+  background: rgba(49, 67, 98, 0.72);
+  border-bottom: 1px solid rgba(149, 175, 210, 0.16);
   display: flex;
   justify-content: space-between;
-  font-size: 0.70rem;
-  font-weight: 700;
-  color: #475569;
-  letter-spacing: 0.1em;
+  align-items: center;
+
+  h3 {
+    margin: 0;
+    font-size: 1.12rem;
+    font-weight: 700;
+    color: #e7eef8;
+  }
 }
 
-/* PLANETARY DETAILS */
+.liveBadge {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #ffd77a;
+  background: rgba(10, 18, 34, 0.85);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: 999px;
+  padding: 0.22rem 0.55rem;
+}
+
 .tableResponsive {
   overflow-x: auto;
 }
@@ -288,187 +287,106 @@
 .planetTable {
   width: 100%;
   border-collapse: collapse;
-  min-width: 500px;
+  min-width: 640px;
 
   th {
     text-align: left;
-    font-size: 0.65rem;
-    color: #475569;
+    font-size: 0.68rem;
+    color: #8ba3c1;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    padding: 1.5rem 0 1rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    letter-spacing: 0.12em;
+    padding: 0.9rem 1.2rem;
+    border-bottom: 1px solid rgba(126, 154, 201, 0.2);
   }
 
   td {
-    padding: 1.25rem 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
-  }
-
-  .boldWhite {
-    font-size: 1rem;
-    font-weight: 700;
-    color: #fff;
-  }
-
-  .signText {
-    color: #F59E0B;
-    font-weight: 600;
-  }
-
-  .degreeTextCyan {
-    color: #06b6d4;
-    font-family: monospace;
-    font-weight: 600;
-  }
-
-  .nakshatraText {
-    color: #94a3b8;
-    font-style: italic;
-  }
-
-  .houseText {
-    color: #64748b;
-    font-weight: 700;
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid rgba(126, 154, 201, 0.12);
   }
 }
 
-/* GEOMETRY ASPECTS */
-.aspectList {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.aspectCardPro {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.03);
-  border-radius: 8px;
-  padding: 1.25rem;
-
-  .aspectTop {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.75rem;
-
-    .aspectPair {
-      font-weight: 700;
-      color: #fff;
-      font-size: 0.95rem;
-    }
-
-    .aspectType {
-      font-size: 0.6rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      color: #06b6d4;
-      background: rgba(6, 182, 212, 0.1);
-      padding: 0.2rem 0.5rem;
-      border-radius: 4px;
-      letter-spacing: 0.05em;
-    }
-  }
-
-  .aspectMid {
-    margin-bottom: 0.75rem;
-
-    .strengthTrack {
-      height: 4px;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 2px;
-      overflow: hidden;
-
-      .strengthFill {
-        height: 100%;
-        border-radius: 2px;
-      }
-    }
-  }
-
-  .aspectBot {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.65rem;
-    font-weight: 700;
-    color: #64748b;
-    letter-spacing: 0.05em;
-  }
-}
-
-/* MATRIX BUTTON */
-.matrixBtn {
-  margin-top: 1.5rem;
-  width: 100%;
-  padding: 1rem;
-  background: transparent;
-  border: 1px dashed rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  color: #64748b;
+.boldWhite {
+  color: #f8fafc;
+  font-size: 1rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  font-size: 0.7rem;
-  cursor: pointer;
-
-  &:hover {
-    border-color: rgba(255, 255, 255, 0.3);
-    color: #fff;
-  }
 }
 
-/* CURRENT VIMSOTTARI DASHA */
-.dashaList {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+.signText {
+  color: #fbbf24;
+  font-weight: 700;
 }
 
-.dashaItem {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.25rem;
+.degreeTextCyan {
+  color: #22d3ee;
+  font-family: monospace;
+  font-weight: 700;
+}
+
+.nakshatraText {
+  color: #9fb1c9;
+  font-style: italic;
+}
+
+.houseText {
+  color: #e6edf8;
+  width: 34px;
+  height: 34px;
+  text-align: center;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.03);
+  background: rgba(11, 23, 47, 0.88);
+  font-weight: 800;
+  padding: 0.35rem 0;
+}
 
-  &.dashaActive {
-    background: rgba(6, 182, 212, 0.05);
-    border-left: 3px solid #06b6d4;
-    border-color: rgba(6, 182, 212, 0.2);
-  }
-
-  .dashaInfo {
-    .dashaTitle {
-      font-weight: 700;
-      color: #06b6d4;
-      font-size: 0.9rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .dashaDate {
-      font-size: 0.7rem;
-      color: #64748b;
-      margin-top: 0.3rem;
-    }
-  }
-
-  .dashaSymbol {
-    font-weight: 800;
-    font-size: 1.25rem;
-    color: #fff;
+@media (max-width: 992px) {
+  .statsTiles {
+    grid-template-columns: 1fr;
   }
 }
 
-/* Inactive phase override */
-.dashaItem:not(.dashaActive) {
-  .dashaInfo .dashaTitle {
-    color: #94a3b8;
+@media (max-width: 768px) {
+  .page {
+    padding: 5.2rem 1rem 1.6rem;
   }
 
-  .dashaSymbol {
-    color: #475569;
+  .engineHeaderPro {
+    padding: 1.25rem;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .actions {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+
+    button {
+      width: 100%;
+      white-space: normal;
+      text-align: center;
+      line-height: 1.25;
+    }
+  }
+
+  .metaRow {
+    gap: 0.45rem;
+  }
+
+  .metaBadge,
+  .metaText {
+    font-size: 0.68rem;
+  }
+
+  .chartPanel {
+    padding: 0.8rem;
+  }
+
+  .chartFrame {
+    padding: 0.55rem;
+  }
+
+  .panelTop h2 {
+    font-size: 1.25rem;
   }
 }

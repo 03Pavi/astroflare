@@ -1,5 +1,5 @@
 
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction, createAction } from "@reduxjs/toolkit";
 
 interface UserInfo {
   uid: string | null;
@@ -20,6 +20,8 @@ const initialState: UserState = {
   isAuthenticated: false,
 };
 
+export const appLogout = createAction('app/logout');
+
 const userSlice = createSlice({
   name: "user",
   initialState,
@@ -31,15 +33,8 @@ const userSlice = createSlice({
       state.photoURL = action.payload.photoURL;
       state.isAuthenticated = true;
     },
-    logout: (state) => {
-      state.uid = null;
-      state.email = null;
-      state.displayName = null;
-      state.photoURL = null;
-      state.isAuthenticated = false;
-    },
   },
 });
 
-export const { setUser, logout } = userSlice.actions;
+export const { setUser } = userSlice.actions;
 export default userSlice.reducer;

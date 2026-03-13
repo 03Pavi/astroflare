@@ -1,8 +1,4 @@
-import { databases } from '@/lib/appwrite';
-import { ID, Query } from 'appwrite';
-
-const DB_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string;
-const CHARTS_ID = process.env.NEXT_PUBLIC_APPWRITE_CHARTS_COLLECTION_ID as string;
+const CHARTS_API_URL = '/api/charts';
 
 export interface BirthChart {
   $id: string;
@@ -22,31 +18,61 @@ export interface BirthChart {
 
 /** Create a new birth chart document */
 export async function createBirthChart(data: Omit<BirthChart, '$id' | 'createdAt'>) {
-  return databases.createDocument(DB_ID, CHARTS_ID, ID.unique(), {
-    ...data,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+  const response = await fetch(CHARTS_API_URL, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify(data),
   });
+
+  if (!response.ok) {
+    throw new Error('Failed to create birth chart');
+  }
+
+  const json = await response.json();
+  return json.document as BirthChart;
 }
 
 /** Fetch all charts for a given userId */
 export async function getUserCharts(userId: string): Promise<BirthChart[]> {
-  const res = await databases.listDocuments(DB_ID, CHARTS_ID, [
-    Query.equal('userId', userId),
-    Query.orderDesc('createdAt'),
-  ]);
-  return res.documents as unknown as BirthChart[];
+  const response = await fetch(
+    `${CHARTS_API_URL}?userId=${encodeURIComponent(userId)}`
+  );
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch user charts');
+  }
+
+  const json = await response.json();
+  return (json.documents ?? []) as BirthChart[];
 }
 
 /** Delete a chart */
 export async function deleteBirthChart(chartId: string) {
-  return databases.deleteDocument(DB_ID, CHARTS_ID, chartId);
+  const response = await fetch(`${CHARTS_API_URL}/${encodeURIComponent(chartId)}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to delete birth chart');
+  }
 }
 
 /** Update a chart */
 export async function updateBirthChart(chartId: string, data: Partial<BirthChart>) {
-  return databases.updateDocument(DB_ID, CHARTS_ID, chartId, {
-    ...data,
-    updatedAt: new Date().toISOString(),
+  const response = await fetch(`${CHARTS_API_URL}/${encodeURIComponent(chartId)}`, {
+    method: 'PATCH',
+    headers: {
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify(data),
   });
+
+  if (!response.ok) {
+    throw new Error('Failed to update birth chart');
+  }
+
+  const json = await response.json();
+  return json.document as BirthChart;
 }

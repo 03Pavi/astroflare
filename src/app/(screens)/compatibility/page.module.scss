@@ -245,11 +245,54 @@
   }
 }
 
+.errorText {
+  margin: -0.5rem 0 1.1rem;
+  text-align: center;
+  color: #fda4af;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.infoDialogPaper {
+  background: #0b111d !important;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.infoDialogTitle {
+  color: #f8fafc !important;
+  font-weight: 800 !important;
+}
+
+.infoDialogContent {
+  p {
+    margin: 0 0 0.95rem;
+    color: #cbd5e1;
+    line-height: 1.7;
+    font-size: 0.95rem;
+  }
+}
+
+.infoDialogActions {
+  padding: 0.75rem 1.5rem 1.2rem !important;
+}
+
+.dialogCloseBtn {
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  background: rgba(245, 158, 11, 0.12);
+  color: #fbbf24;
+  border-radius: 10px;
+  padding: 0.5rem 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .footerTags {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 2rem;
+  min-width: max-content;
 
   span {
     display: flex;

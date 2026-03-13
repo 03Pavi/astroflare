@@ -9,29 +9,27 @@ import {
   type User,
 } from 'firebase/auth';
 import { app } from '@/lib/firebase';
-import { databases } from '@/lib/appwrite';
-import { ID } from 'appwrite';
 
 const auth = getAuth(app);
 
-const DB_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string;
-const USERS_COLL = process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID as string; // user_details
-
 /** Save or update user in Appwrite collection */
 async function upsertUserInAppwrite(user: User, provider: string) {
-  try {
-    await databases.createDocument(DB_ID, USERS_COLL, user.uid, {
+  const response = await fetch('/api/users', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
       firebaseUid: user.uid,
       name: user.displayName ?? user.email ?? 'Unknown',
       email: user.email ?? '',
       provider,
       photoURL: user.photoURL ?? '',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      onboardingComplete: false,
-    });
-  } catch {
-    // Document already exists — skip silently
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to save user profile');
   }
 }
 

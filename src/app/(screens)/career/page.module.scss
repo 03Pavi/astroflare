@@ -22,12 +22,14 @@
   position: relative;
   z-index: 1;
   padding: 6.5rem 1rem 3rem;
+  overflow-x: hidden;
 }
 
 .panel {
   max-width: 1040px;
   margin: 0 auto;
   width: 100%;
+  overflow-x: clip;
 }
 
 .backLink,
@@ -93,6 +95,13 @@
   gap: 0.9rem;
 }
 
+.controlActions {
+  display: flex;
+  align-items: end;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
 .control {
   display: grid;
   gap: 0.45rem;
@@ -126,10 +135,13 @@
 .heroCard,
 .primaryCard,
 .sideCard,
-.emptyState {
+.emptyState,
+.analysisCard {
   border-radius: 20px;
   border: 1px solid rgba(96, 165, 250, 0.12);
   box-shadow: 0 22px 80px rgba(2, 6, 23, 0.32);
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .heroCard {
@@ -148,6 +160,9 @@
     max-width: 48rem;
     line-height: 1.7;
     font-size: 1.02rem;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 }
 
@@ -255,6 +270,93 @@
   }
 }
 
+.d10Block {
+  margin-top: 1.2rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.14);
+
+  h4 {
+    margin: 0 0 0.6rem;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #7ea2d8;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.92rem;
+    color: #9fb2d0;
+  }
+}
+
+.apiRaw {
+  margin: 0;
+  padding: 0.85rem;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.86);
+  border: 1px solid rgba(96, 165, 250, 0.16);
+  color: #c8d7ed;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  overflow: auto;
+  max-height: 260px;
+}
+
+.errorText {
+  color: #fda4af !important;
+}
+
+.svgCard {
+  background: rgba(15, 23, 42, 0.86);
+  border: 1px solid rgba(96, 165, 250, 0.16);
+  border-radius: 12px;
+  padding: 0.8rem;
+  overflow: auto;
+
+  svg {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+.tableWrap {
+  overflow: auto;
+  border-radius: 10px;
+  border: 1px solid rgba(96, 165, 250, 0.16);
+  background: rgba(15, 23, 42, 0.86);
+  max-width: 100%;
+}
+
+.d10Table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 420px;
+
+  th,
+  td {
+    padding: 0.65rem 0.75rem;
+    border-bottom: 1px solid rgba(96, 165, 250, 0.12);
+    text-align: left;
+    font-size: 0.85rem;
+    color: #d7e4f7;
+  }
+
+  th {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #8eb0db;
+    background: rgba(30, 41, 59, 0.75);
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+}
+
 .sideCard {
   min-height: 308px;
 }
@@ -330,12 +432,150 @@
 }
 
 .primaryButton {
-  margin-top: 0.5rem;
+  width: 100%;
+  min-height: 52px;
+  margin-top: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
   padding: 0.9rem 1.2rem;
   border-radius: 12px;
   background: #f59e0b;
   color: #111827;
   font-weight: 800;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 24px rgba(245, 158, 11, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+.secondaryButton {
+  min-height: 52px;
+  width: 100%;
+  padding: 0.9rem 1.1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(96, 165, 250, 0.28);
+  background: rgba(15, 23, 42, 0.8);
+  color: #dbeafe;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    border-color: rgba(96, 165, 250, 0.5);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+.analysisCard {
+  border-radius: 20px;
+  border: 1px solid rgba(96, 165, 250, 0.12);
+  background: rgba(10, 18, 38, 0.88);
+  box-shadow: 0 22px 80px rgba(2, 6, 23, 0.32);
+  padding: 1.4rem 1.35rem;
+}
+
+.analysisHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.85rem;
+
+  h3 {
+    margin: 0;
+    color: #f8fafc;
+    font-size: 1.25rem;
+  }
+}
+
+.analysisSections {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.markdownBody {
+  color: #c2d2e8;
+  line-height: 1.75;
+  font-size: 0.98rem;
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    color: #f8fafc;
+    margin: 0.8rem 0 0.45rem;
+    line-height: 1.35;
+  }
+
+  h1,
+  h2 {
+    font-size: 1.35rem;
+  }
+
+  h3,
+  h4 {
+    font-size: 1.08rem;
+  }
+
+  p {
+    margin: 0.45rem 0;
+  }
+
+  ul,
+  ol {
+    margin: 0.45rem 0 0.7rem;
+    padding-left: 1.2rem;
+  }
+
+  li {
+    margin: 0.25rem 0;
+  }
+
+  strong {
+    color: #e7f0ff;
+  }
+}
+
+.analysisSection {
+  border-radius: 12px;
+  border: 1px solid rgba(96, 165, 250, 0.14);
+  background: rgba(15, 23, 42, 0.84);
+  padding: 0.95rem 1rem;
+
+  h4 {
+    margin: 0 0 0.45rem;
+    color: #93c5fd;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  p {
+    margin: 0;
+    color: #c2d2e8;
+    line-height: 1.7;
+    font-size: 0.95rem;
+  }
+
+  p + p {
+    margin-top: 0.35rem;
+  }
 }
 
 @media (max-width: 900px) {
@@ -347,6 +587,15 @@
   .controls,
   .grid {
     grid-template-columns: 1fr;
+  }
+
+  .controlActions {
+    align-items: stretch;
+  }
+
+  .primaryButton,
+  .secondaryButton {
+    width: 100%;
   }
 
   .optionRail {
@@ -367,6 +616,16 @@
 
   .heroCard h2 {
     font-size: 1.7rem;
+  }
+
+  .heroCard p {
+    max-width: 100%;
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  .d10Table {
+    min-width: 340px;
   }
 
   .optionRail {

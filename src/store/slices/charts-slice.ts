@@ -1,6 +1,6 @@
 
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { BirthChart, getUserCharts, createBirthChart, deleteBirthChart, updateBirthChart } from '@/lib/charts';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { type BirthChart } from '@/lib/charts';
 
 interface ChartsState {
   charts: BirthChart[];
@@ -15,6 +15,16 @@ const initialState: ChartsState = {
 };
 
 const ASTRO_API_URL = '/api/birthchart';
+const CHARTS_API_URL = '/api/charts';
+
+async function parseErrorMessage(response: Response, fallback: string) {
+  try {
+    const errorData = await response.json();
+    return errorData.message || errorData.error || fallback;
+  } catch {
+    return fallback;
+  }
+}
 
 /**
  * Thunk to create a new birth chart.
@@ -89,9 +99,23 @@ export const addChart = createAsyncThunk(
         longitude: payload.lon ? parseFloat(payload.lon) : undefined,
       };
 
-      // 2. Save to Appwrite
-      const savedDoc = await createBirthChart(newChartData);
-      return savedDoc as unknown as BirthChart;
+      // 2. Save through internal server route
+      const saveResponse = await fetch(CHARTS_API_URL, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify(newChartData),
+      });
+
+      if (!saveResponse.ok) {
+        throw new Error(
+          await parseErrorMessage(saveResponse, 'Failed to save birth chart')
+        );
+      }
+
+      const saveData = await saveResponse.json();
+      return saveData.document as BirthChart;
     } catch (error: any) {
       return rejectWithValue(error.message);
     }
@@ -105,8 +129,18 @@ export const fetchUserCharts = createAsyncThunk(
   'charts/fetchUserCharts',
   async (userId: string, { rejectWithValue }) => {
     try {
-      const data = await getUserCharts(userId);
-      return data;
+      const response = await fetch(
+        `${CHARTS_API_URL}?userId=${encodeURIComponent(userId)}`
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          await parseErrorMessage(response, 'Failed to fetch user charts')
+        );
+      }
+
+      const data = await response.json();
+      return (data.documents ?? []) as BirthChart[];
     } catch (error: any) {
       return rejectWithValue(error.message);
     }
@@ -120,7 +154,15 @@ export const removeChart = createAsyncThunk(
   'charts/removeChart',
   async (chartId: string, { rejectWithValue }) => {
     try {
-      await deleteBirthChart(chartId);
+      const response = await fetch(`${CHARTS_API_URL}/${encodeURIComponent(chartId)}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          await parseErrorMessage(response, 'Failed to delete birth chart')
+        );
+      }
       return chartId;
     } catch (error: any) {
       return rejectWithValue(error.message);
@@ -195,9 +237,26 @@ export const editChart = createAsyncThunk(
         longitude: payload.lon ? parseFloat(payload.lon) : undefined,
       };
 
-      // 2. Update in Appwrite
-      const updatedDoc = await updateBirthChart(payload.chartId, updatedData);
-      return updatedDoc as unknown as BirthChart;
+      // 2. Update through internal server route
+      const updateResponse = await fetch(
+        `${CHARTS_API_URL}/${encodeURIComponent(payload.chartId)}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify(updatedData),
+        }
+      );
+
+      if (!updateResponse.ok) {
+        throw new Error(
+          await parseErrorMessage(updateResponse, 'Failed to update birth chart')
+        );
+      }
+
+      const updateData = await updateResponse.json();
+      return updateData.document as BirthChart;
     } catch (error: any) {
       return rejectWithValue(error.message);
     }

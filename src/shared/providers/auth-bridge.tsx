@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useAuth } from '@/context/auth-context';
 import { useAppDispatch } from '@/store/hooks';
-import { setUser, logout } from '@/store/slices/user-slice';
+import { setUser, appLogout } from '@/store/slices/user-slice';
 
 export default function AuthBridge() {
   const { user, loading } = useAuth();
@@ -19,7 +19,7 @@ export default function AuthBridge() {
           photoURL: user.photoURL
         }));
       } else {
-        dispatch(logout());
+        dispatch(appLogout());
       }
     }
   }, [user, loading, dispatch]);

@@ -128,6 +128,12 @@
   display: flex;
   align-items: center;
   gap: 1rem;
+
+  @media (max-width: 640px) {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
 }
 
 .currentSignBadge {
@@ -142,6 +148,14 @@
   font-weight: 700;
   color: #fff;
   white-space: nowrap;
+
+  @media (max-width: 640px) {
+    flex: 1 1 auto;
+    min-width: 0;
+    justify-content: center;
+    padding: 0.45rem 0.7rem;
+    font-size: 0.82rem;
+  }
 
   .signEmoji {
     font-size: 1.1rem;
@@ -162,6 +176,12 @@
   padding: 0.5rem;
   border-radius: 10px;
   transition: all 0.2s;
+
+  @media (max-width: 640px) {
+    flex: 1 1 auto;
+    justify-content: center;
+    min-width: 0;
+  }
 
   &:hover {
     color: #fff;
@@ -271,6 +291,11 @@
   display: flex;
   align-items: center;
   gap: 1.5rem;
+
+  @media (max-width: 640px) {
+    gap: 0.6rem;
+    margin-bottom: 1.5rem;
+  }
 }
 
 .signSelector {
@@ -297,6 +322,13 @@
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
+
+  @media (max-width: 640px) {
+    padding: 0.62rem 1rem;
+    font-size: 0.82rem;
+    min-width: 96px;
+    text-align: center;
+  }
 
   &:hover {
     color: #fff;
@@ -337,6 +369,7 @@
 
   @media (max-width: 640px) {
     padding: 1.5rem;
+    border-radius: 22px;
   }
 }
 
@@ -348,7 +381,8 @@
 
   @media (max-width: 640px) {
     flex-direction: column;
-    text-align: center;
+    text-align: left;
+    align-items: flex-start;
     gap: 1.5rem;
   }
 }
@@ -384,6 +418,13 @@
     justify-content: center;
     color: #000;
   }
+
+  @media (max-width: 640px) {
+    width: 96px;
+    height: 96px;
+    border-radius: 22px;
+    font-size: 3rem;
+  }
 }
 
 .headerInfo {
@@ -396,7 +437,9 @@
     margin-bottom: 0.25rem;
 
     @media (max-width: 640px) {
-      justify-content: center;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+      gap: 0.5rem;
     }
 
     h1 {
@@ -404,6 +447,14 @@
       font-weight: 800;
       margin: 0;
       line-height: 1;
+
+      @media (max-width: 640px) {
+        font-size: 3.25rem;
+      }
+
+      @media (max-width: 420px) {
+        font-size: 2.8rem;
+      }
     }
 
     .sanskritName {
@@ -415,6 +466,11 @@
       background: rgba(255, 255, 255, 0.05);
       padding: 0.25rem 0.75rem;
       border-radius: 8px;
+
+      @media (max-width: 420px) {
+        font-size: 0.72rem;
+        padding: 0.2rem 0.55rem;
+      }
     }
   }
 
@@ -427,7 +483,8 @@
     font-weight: 500;
 
     @media (max-width: 640px) {
-      justify-content: center;
+      justify-content: flex-start;
+      font-size: 0.95rem;
     }
 
     svg {
@@ -503,6 +560,11 @@
     color: #cbd5e1;
     font-size: 1.1rem;
     line-height: 1.7;
+
+    @media (max-width: 640px) {
+      font-size: 1rem;
+      line-height: 1.62;
+    }
   }
 }
 
@@ -598,5 +660,33 @@
 
   &:hover {
     background: rgba(255, 255, 255, 0.08);
+  }
+}
+
+@media (max-width: 640px) {
+  .profileBanner {
+    padding: 0.75rem;
+    margin-bottom: 2rem;
+  }
+
+  .profileBannerMain {
+    gap: 0.8rem;
+  }
+
+  .bannerLeftSection {
+    width: 100%;
+    gap: 0.75rem;
+  }
+
+  .profileBannerRight {
+    width: 100%;
+  }
+
+  .header {
+    margin-bottom: 2rem;
+  }
+
+  .header p {
+    font-size: 1.05rem;
   }
 }

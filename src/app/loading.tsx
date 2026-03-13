@@ -1,9 +1,9 @@
-import React from 'react'
+import styles from './loading.module.scss';
 
-const loading = () => {
+export default function Loading() {
   return (
-    <div>loading</div>
-  )
+    <div className={styles.wrap}>
+      <div className={styles.loader} />
+    </div>
+  );
 }
-
-export default loading
