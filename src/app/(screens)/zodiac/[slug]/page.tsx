@@ -117,7 +117,6 @@ export default function SignDetailPage({ params }: { params: Promise<{ slug: str
                 {sign.element} Sign
               </div>
               <h1 className={styles.signName}>{sign.name}</h1>
-              <span className={styles.dateRange}>{currentDynamicRange || sign.date} • {todayInfo.display}</span>
               <p className={styles.description}>{sign.description}</p>
 
               <div className={styles.traits}>

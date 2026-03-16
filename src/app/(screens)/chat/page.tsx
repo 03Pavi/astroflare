@@ -5,11 +5,11 @@ import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import dynamic from 'next/dynamic';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkBreaks from 'remark-breaks';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import SendIcon from '@mui/icons-material/Send';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import Image from 'next/image';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import AddIcon from '@mui/icons-material/Add';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import CloseIcon from '@mui/icons-material/Close';
@@ -194,9 +194,10 @@ function ChatContent() {
         body: JSON.stringify({
           question: msg,
           chartData: primaryChart ? JSON.stringify(primaryChart) : null,
-          stream: true, 
+          stream: true,
         }),
       });
+
       if (!res.ok) {
         const errorText = await res.text();
         throw new Error(errorText || 'Failed to fetch response');
@@ -215,13 +216,17 @@ function ChatContent() {
         );
       };
 
-      // JSON fallback for non-streaming upstream responses.
       if (contentType.includes('application/json')) {
         const data = await res.json();
         const plain =
           data.response ||
           data.answer ||
           data.message ||
+          data.result ||
+          data.text ||
+          data.content ||
+          (typeof data === 'string' ? data : null) ||
+          (Object.keys(data).length > 0 ? JSON.stringify(data, null, 2) : null) ||
           'The stars are silent right now. Please try again soon.';
         appendAssistantText(typeof plain === 'string' ? plain : JSON.stringify(plain));
       } else if (res.body) {
@@ -237,7 +242,6 @@ function ChatContent() {
           if (!chunk) continue;
           sseBuffer += chunk;
 
-          // Parse complete SSE events separated by a blank line.
           const events = sseBuffer.split('\n\n');
           sseBuffer = events.pop() || '';
 
@@ -265,7 +269,6 @@ function ChatContent() {
           }
         }
 
-        // Fallback if upstream sent plain text instead of SSE frames.
         if (!streamedText.trim() && sseBuffer.trim()) {
           appendAssistantText(sseBuffer.trim());
         }
@@ -386,61 +389,61 @@ function ChatContent() {
         PaperProps={{ className: styles.sidebar }}
       >
         <div className={styles.sidebarContent}>
-            <div className={styles.sidebarHeader}>
-              <div className={styles.sidebarLogo}>
-                <AutoAwesomeIcon sx={{ fontSize: '1.1rem', color: '#a78bfa' }} />
-                <span>Chat History</span>
-              </div>
-              <button className={styles.sidebarClose} onClick={() => setSidebarOpen(false)}>
-                <CloseIcon sx={{ fontSize: '1.1rem' }} />
-              </button>
+          <div className={styles.sidebarHeader}>
+            <div className={styles.sidebarLogo}>
+              <AutoAwesomeIcon sx={{ fontSize: '1.1rem', color: '#a78bfa' }} />
+              <span>Chat History</span>
             </div>
-
-            <button className={styles.newChatBtn} onClick={startNewChat}>
-              <AddIcon sx={{ fontSize: '1rem' }} />
-              New Chat
+            <button className={styles.sidebarClose} onClick={() => setSidebarOpen(false)}>
+              <CloseIcon sx={{ fontSize: '1.1rem' }} />
             </button>
+          </div>
 
-            <div className={styles.historyList}>
-              {chatHistory.length === 0 ? (
-                <div className={styles.noHistory}>
-                  <ChatBubbleOutlineIcon sx={{ fontSize: '2rem', color: '#334155', mb: 1 }} />
-                  <p>No previous chats yet</p>
-                </div>
-              ) : (
-                <>
-                  <span className={styles.historyLabel}>Recent — Top {MAX_HISTORY}</span>
-                  {chatHistory.map((session) => (
-                    <div
-                      key={session.id}
-                      role="button"
-                      tabIndex={0}
-                      className={`${styles.historyItem} ${currentSessionId === session.id ? styles.historyActive : ''}`}
-                      onClick={() => loadSession(session)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          loadSession(session);
-                        }
-                      }}
-                    >
-                      <ChatBubbleOutlineIcon sx={{ fontSize: '0.9rem', flexShrink: 0, opacity: 0.5 }} />
-                      <div className={styles.historyItemContent}>
-                        <span className={styles.historyTitle}>{session.title}</span>
-                        <span className={styles.historyTime}>{formatTime(session.createdAt)}</span>
-                      </div>
-                      <button
-                        className={styles.deleteBtn}
-                        onClick={(e) => deleteSession(e, session.id)}
-                        title="Delete"
-                      >
-                        <DeleteOutlineIcon sx={{ fontSize: '0.9rem' }} />
-                      </button>
+          <button className={styles.newChatBtn} onClick={startNewChat}>
+            <AddIcon sx={{ fontSize: '1rem' }} />
+            New Chat
+          </button>
+
+          <div className={styles.historyList}>
+            {chatHistory.length === 0 ? (
+              <div className={styles.noHistory}>
+                <ChatBubbleOutlineIcon sx={{ fontSize: '2rem', color: '#334155', mb: 1 }} />
+                <p>No previous chats yet</p>
+              </div>
+            ) : (
+              <>
+                <span className={styles.historyLabel}>Recent — Top {MAX_HISTORY}</span>
+                {chatHistory.map((session) => (
+                  <div
+                    key={session.id}
+                    role="button"
+                    tabIndex={0}
+                    className={`${styles.historyItem} ${currentSessionId === session.id ? styles.historyActive : ''}`}
+                    onClick={() => loadSession(session)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        loadSession(session);
+                      }
+                    }}
+                  >
+                    <ChatBubbleOutlineIcon sx={{ fontSize: '0.9rem', flexShrink: 0, opacity: 0.5 }} />
+                    <div className={styles.historyItemContent}>
+                      <span className={styles.historyTitle}>{session.title}</span>
+                      <span className={styles.historyTime}>{formatTime(session.createdAt)}</span>
                     </div>
-                  ))}
-                </>
-              )}
-            </div>
+                    <button
+                      className={styles.deleteBtn}
+                      onClick={(e) => deleteSession(e, session.id)}
+                      title="Delete"
+                    >
+                      <DeleteOutlineIcon sx={{ fontSize: '0.9rem' }} />
+                    </button>
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
         </div>
       </Drawer>
 
@@ -523,7 +526,7 @@ function ChatContent() {
                           <span /><span /><span />
                         </div>
                       ) : (
-                        <ReactMarkdown components={{ p: ({ children }) => <>{children}</> }}>{msg.content}</ReactMarkdown>
+                        <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>{msg.content}</ReactMarkdown>
                       )
                     ) : (
                       msg.content

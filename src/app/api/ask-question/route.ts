@@ -16,57 +16,6 @@ const client = new QdrantClient({
   checkCompatibility: false,
 });
 
-/* ---------------- HELPERS ---------------- */
-
-function parseChartData(chartData: unknown) {
-  if (!chartData) return null;
-
-  let parsedRoot: unknown = chartData;
-
-  if (typeof chartData === "string") {
-    try {
-      parsedRoot = JSON.parse(chartData);
-    } catch {
-      return null;
-    }
-  }
-
-  if (!parsedRoot || typeof parsedRoot !== "object") return null;
-
-  const root = parsedRoot as Record<string, unknown>;
-  let nestedDetails: Record<string, unknown> | null = null;
-
-  if (typeof root.chartData === "string") {
-    try {
-      const parsedNested = JSON.parse(root.chartData);
-      if (parsedNested && typeof parsedNested === "object") {
-        nestedDetails = parsedNested as Record<string, unknown>;
-      }
-    } catch {}
-  }
-
-  return { root, details: nestedDetails };
-}
-
-function formatChartSummary(chartPayload: ReturnType<typeof parseChartData>) {
-  if (!chartPayload) return "No birth chart data provided.";
-
-  const { root, details } = chartPayload;
-
-  return [
-    `Label: ${root.label ?? "Unknown"}`,
-    `Birth date: ${root.birthDate ?? "Unknown"}`,
-    `Birth time: ${root.birthTime ?? "Unknown"}`,
-    `Birth place: ${root.birthPlace ?? "Unknown"}`,
-    `Sun sign: ${root.sunSign ?? details?.sun_sign ?? "Unknown"}`,
-    `Moon sign: ${root.moonSign ?? details?.moon_sign ?? "Unknown"}`,
-    `Rising sign: ${
-      root.risingSign ?? details?.ascendant ?? details?.rising_sign ?? "Unknown"
-    }`,
-    `Chart details: ${JSON.stringify(details ?? root)}`,
-  ].join("\n");
-}
-
 /* ---------------- ROUTE ---------------- */
 
 export async function POST(req: NextRequest) {
@@ -77,14 +26,7 @@ export async function POST(req: NextRequest) {
     if (!question) {
       return new Response("Question required", { status: 400 });
     }
-
-    const isStream = stream === true;
-
     /* -------- chart context -------- */
-
-    const chartPayload = parseChartData(chartData);
-    const chartContext = formatChartSummary(chartPayload);
-
     let context = "";
 
     try {
@@ -97,28 +39,52 @@ export async function POST(req: NextRequest) {
             Authorization: `Bearer ${process.env.CF_API_TOKEN}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ text: question }), // 🔥 ONLY question
+          body: JSON.stringify({ text: `${question}\n${JSON.stringify(chartData)}` }), // 🔥 ONLY question
         }
       );
 
       const embeddingData = await embeddingRes.json();
       const vector = embeddingData.result.data[0];
 
-      const search = await client.search("books", {
+      const search = await client.search("vedic-astro", {
         vector,
-        limit: 4,
+        limit: 6,
       });
 
-      context = search
-        .map((r) => {
-          const text = r.payload?.text;
-          return typeof text === "string" ? text.slice(0, 700) : undefined;
-        })
-        .filter(Boolean)
-        .join("\n\n");
+      console.log(search, 'search')
+
+      const relevant = search.filter((r) => r.score && r.score > 0.2);
+
+      if (relevant.length > 0) {
+        context = relevant
+          .map((r, i) => {
+            const text = r.payload?.text;
+            if (!text || typeof text !== "string") return null;
+
+            return `Reference ${i + 1}:\n${text.slice(0, 400)}`;
+          })
+          .filter(Boolean)
+          .join("\n\n");
+      } else {
+        context = search
+          .slice(0, 2)
+          .map((r, i) => {
+            const text = r.payload?.text;
+            if (!text || typeof text !== "string") return null;
+
+            return `Reference ${i + 1}:\n${text.slice(0, 800)}`;
+          })
+          .filter(Boolean)
+          .join("\n\n");
+      }
     } catch (err) {
-      console.error(err);
-      context = "";
+      console.error("Embedding or search error:", err);
+    }
+
+    if (!context) {
+      return Response.json({
+        answer: "No astrology knowledge found in database.",
+      });
     }
 
     /* -------- call worker -------- */
@@ -131,10 +97,9 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         question,
-        chartData,
+        chartData: JSON.stringify(chartData).slice(0, 1200),
         context,
-        stream: true,
-        system_prompt: `You are an expert Vedic astrology consultant. Your role is to provide insights based on provided birth chart data. Answer questions clearly and concisely, focusing only on astrological interpretation. Do not answer personal questions or questions outside the scope of Vedic astrology.`
+        stream,
       }),
     });
 
@@ -142,35 +107,8 @@ export async function POST(req: NextRequest) {
       return new Response(await res.text(), { status: res.status });
     }
 
-    /* ---------------- STREAM FIX ---------------- */
-
-    if (isStream && res.body) {
-      const encoder = new TextEncoder();
-      const decoder = new TextDecoder();
-
-      const stream = new ReadableStream({
-        async start(controller) {
-          const reader = res.body!.getReader();
-
-          try {
-            while (true) {
-              const { done, value } = await reader.read();
-              if (done) break;
-
-              const chunk = decoder.decode(value, { stream: true });
-
-              // 🔥 directly forward chunk (no parsing)
-              controller.enqueue(encoder.encode(chunk));
-            }
-
-            controller.close();
-          } catch (err) {
-            controller.error(err);
-          }
-        },
-      });
-
-      return new Response(stream, {
+    if (stream && res.body) {
+      return new Response(res.body, {
         headers: {
           "Content-Type": "text/event-stream",
           "Cache-Control": "no-cache, no-transform",

@@ -13,7 +13,6 @@ import { fetchHoroscope } from '@/store/slices/horoscope-slice';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import ExploreIcon from '@mui/icons-material/Explore';
 import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
-import SyncIcon from '@mui/icons-material/Sync';
 import CloseIcon from '@mui/icons-material/Close';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PeopleIcon from '@mui/icons-material/People';
@@ -93,7 +92,7 @@ function UserProfileBanner({ user, activeChart, charts }: {
                   className={styles.currentSignBadge}
                 >
                   <WbSunnyIcon sx={{ fontSize: '1rem', color: '#f59e0b' }} />
-                  <span>{activeChart?.sunSign || 'Unknown'} Sun</span>
+                  <span>{activeChart?.sunSign || 'Unknown'} Surya</span>
                   <span className={styles.signEmoji}>{currentSignData?.icon}</span>
                 </motion.div>
 

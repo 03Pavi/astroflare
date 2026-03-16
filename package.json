@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3011",
+    "dev": "next dev -p 3010",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -44,6 +44,8 @@
     "react-markdown": "10.1.0",
     "react-redux": "^9.2.0",
     "redux-persist": "^6.0.0",
+    "remark-breaks": "4.0.0",
+    "remark-gfm": "4.0.1",
     "sass": "^1.85.1",
     "three": "0.183.2",
     "vedic-astro": "0.1.1"

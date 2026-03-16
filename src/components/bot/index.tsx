@@ -57,8 +57,8 @@ const Bot = () => {
 			onClick={openChat}
 			sx={{
 				position: "fixed",
-				bottom: "2.5rem",
-				right: "2.5rem",
+				bottom: "2rem",
+				right: "2rem",
 				zIndex: 9999,
 				cursor: "pointer",
 				userSelect: "none",
@@ -67,7 +67,6 @@ const Bot = () => {
 				alignItems: "center",
 			}}
 		>
-			{/* Ink-Wash Parchment Message Bubble */}
 			<Box
 				sx={{
 					position: "absolute",

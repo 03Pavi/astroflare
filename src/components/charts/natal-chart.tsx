@@ -217,7 +217,7 @@ export default function NatalChart({ details }: NatalChartProps) {
                 }}
               >
                 <span style={{ display: 'block', color: '#f59e0b', fontSize: '0.58rem', fontWeight: 900, textTransform: 'uppercase' }}>
-                  Sun Sign
+                  Sun Sign (Surya)
                 </span>
                 <span style={{ color: '#fff', fontSize: '0.86rem', fontWeight: 800 }}>{sunSign}</span>
               </div>
@@ -230,7 +230,7 @@ export default function NatalChart({ details }: NatalChartProps) {
                 }}
               >
                 <span style={{ display: 'block', color: '#22d3ee', fontSize: '0.58rem', fontWeight: 900, textTransform: 'uppercase' }}>
-                  Moon Sign
+                  Moon Sign (Chandra)
                 </span>
                 <span style={{ color: '#fff', fontSize: '0.86rem', fontWeight: 800 }}>{moonSign}</span>
               </div>
@@ -420,13 +420,12 @@ export default function NatalChart({ details }: NatalChartProps) {
                               fontWeight: 900,
                               padding: '2px 6px',
                               borderRadius: '8px',
-                              border: `1px solid ${
-                                planet.name === 'Sun'
+                              border: `1px solid ${planet.name === 'Sun'
                                   ? 'rgba(245, 158, 11, 0.45)'
                                   : planet.name === 'Moon'
                                     ? 'rgba(34, 211, 238, 0.45)'
                                     : 'rgba(71, 85, 105, 1)'
-                              }`,
+                                }`,
                               background:
                                 planet.name === 'Sun'
                                   ? 'rgba(245, 158, 11, 0.16)'

@@ -150,8 +150,6 @@ export default function Dock({
 }: DockProps) {
   const mouseX = useMotionValue(Infinity);
   const isHovered = useMotionValue(0);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
   const maxHeight = useMemo(
     () => Math.max(dockHeight, magnification + magnification / 2 + 4),
     [magnification, dockHeight]
@@ -159,7 +157,6 @@ export default function Dock({
 
   // Custom transform logic explicitly mapped to height values since framer-motion wants standard arrays
   const heightRow = useTransform(isHovered, [0, 1], [panelHeight, maxHeight]);
-  const height = useSpring(heightRow, spring);
 
   return (
     <>
@@ -195,37 +192,6 @@ export default function Dock({
           ))}
         </motion.div>
       </div>
-
-      {/* Mobile Hamburger Menu */}
-      <div className={styles.mobileMenuBtn} onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-        {isMobileMenuOpen ? <CloseIcon /> : <MenuIcon />}
-      </div>
-
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <motion.div
-            className={styles.mobileMenu}
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            transition={{ duration: 0.2 }}
-          >
-            {items.map((item, index) => (
-              <div
-                key={index}
-                className={styles.mobileMenuItem}
-                onClick={() => {
-                  item.onClick();
-                  setIsMobileMenuOpen(false);
-                }}
-              >
-                {item.icon}
-                <span>{item.label}</span>
-              </div>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
     </>
   );
 }
